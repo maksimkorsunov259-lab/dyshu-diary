@@ -1,0 +1,165 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17614e"><meta name="color-scheme" content="light"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Дышу"><meta name="description" content="Личный дневник пикфлоуметрии с графиками и отчётом для врача. Данные на вашем устройстве."><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>Дышу — дневник пикфлоуметрии</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon-192.png"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="stylesheet" href="./app.css"></head><body><div id="pf-demo">
+ <div class="pf-stage viz-dotted-background">
+  <section class="pf-phone" aria-label="Мобильный дневник пикфлоуметрии">
+   <header class="pf-header">
+    <div class="pf-brand"><strong>Дышу · дневник</strong><span class="pf-demo-label">На устройстве</span></div>
+    <select disabled id="pf-profile" aria-label="Выбрать дневник"><option value="adult">Мой дневник</option><option value="child">Дневник ребёнка</option></select>
+   </header>
+   <div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><main class="pf-content" inert>
+    <section id="pf-graph-panel">
+     <h2>Дыхание в динамике</h2><p class="pf-sub" id="pf-period"></p>
+     <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
+     <div class="pf-box"><div class="pf-row"><h3>ПСВ, л/мин</h3><span class="pf-sub" id="pf-personal"></span></div><svg id="pf-chart" class="pf-chart" role="img" aria-label="Утренние и вечерние значения пиковой скорости выдоха"></svg><div class="pf-legend"><span><i class="pf-dot"></i>Утро</span><span><i class="pf-square"></i>Вечер</span></div><p class="pf-sub">Разрыв — нет измерения. Пунктир — 100% выбранного ориентира на дату измерения.</p></div>
+     <div class="pf-box"><h3>События выбранного дня</h3><div class="pf-daynav"><button type="button" id="pf-prev-day" aria-label="Предыдущий день">←</button><input type="date" id="pf-timeline-date" aria-label="Дата на временной шкале" min="1900-01-01"><button type="button" id="pf-next-day" aria-label="Следующий день">→</button></div><div id="pf-timeline" aria-live="polite"></div><button type="button" id="pf-add-event" class="pf-primary pf-wide">Симптомы / ингалятор</button></div>
+     <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button></div>
+     <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-reference-summary"></div><div id="pf-zone-legend" class="pf-zones"></div><button type="button" id="pf-configure" class="pf-wide">Настройки врача</button></div>
+    </section>
+        <section id="pf-guide-panel" hidden aria-labelledby="pf-guide-title">
+     <button type="button" id="pf-guide-back">← Вернуться к записи</button>
+     <h2 id="pf-guide-title" style="margin-top:20px">Как измерять ПСВ</h2>
+     <p class="pf-sub">Памятка по домашней пикфлоуметрии</p>
+     <details class="pf-box" open>
+      <summary><strong>Когда измерять</strong></summary>
+      <p>Измеряйте ежедневно утром после пробуждения и вечером перед сном, примерно в одно и то же время.</p>
+      <p>По возможности измеряйте до плановой ингаляции, по схеме врача. Если препарат уже использован, отметьте его название и время в дневнике.</p>
+      <p><strong>Не откладывайте необходимую помощь ради измерения.</strong> При ухудшении действуйте по индивидуальному плану врача.</p>
+      <p id="pf-guide-duration"></p>
+      <p class="pf-sub">Продолжительность наблюдения задаёт врач в профиле. При необходимости наблюдение можно продлить.</p>
+     </details>
+     <details class="pf-box" open>
+      <summary><strong>Как измерять</strong></summary>
+      <ol class="pf-guide-steps">
+       <li><strong>Подготовьте прибор.</strong> Присоедините мундштук согласно инструкции к своему пикфлоуметру. Используйте один и тот же прибор.</li>
+       <li><strong>Верните бегунок к началу шкалы.</strong> Делайте это перед каждой попыткой.</li>
+       <li><strong>Выпрямите спину.</strong> Измеряйте каждый раз в одинаковой позе — стоя или сидя.</li>
+       <li><strong>Держите прибор правильно.</strong> Для обычного механического пикфлоуметра — горизонтально, не закрывая шкалу, бегунок и выходные отверстия пальцами. Следуйте инструкции к своей модели.</li>
+       <li><strong>Сделайте максимально глубокий вдох.</strong></li>
+       <li><strong>Плотно обхватите мундштук губами.</strong> Не закрывайте отверстие языком.</li>
+       <li><strong>Резко, максимально быстро и сильно выдохните.</strong> Нужен короткий мощный выдох. Ребёнку можно предложить представить, что он одним резким выдохом гасит свечи на торте.</li>
+       <li><strong>Посмотрите на положение бегунка.</strong> Введите результат в л/мин в поле соответствующей попытки.</li>
+       <li><strong>Повторите до трёх правильных попыток.</strong> Перед каждой снова установите бегунок, глубоко вдохните и выполните резкий выдох. Если закашлялись или воздух прошёл мимо мундштука, повторите попытку и не используйте ошибочное значение.</li>
+       <li><strong>Сохраните измерение.</strong> Приложение выберет лучший из введённых результатов автоматически.</li>
+      </ol>
+     </details>
+     <details class="pf-box">
+      <summary><strong>Если попытки отличаются</strong></summary>
+      <p>Если два лучших результата отличаются более чем на 40 л/мин, проверьте технику. Приложение предложит добавить четвёртую и при необходимости пятую попытку.</p>
+      <p>Всего — до пяти попыток. Если разброс сохраняется, сохраните результаты с отметкой о расхождении и обсудите технику с врачом. Не продолжайте бесконечно добиваться одинаковых цифр.</p>
+      <p class="pf-sub">Близкие результаты сами по себе не гарантируют правильную технику. При головокружении или ухудшении самочувствия прекратите манёвры.</p>
+     </details>
+     <button type="button" id="pf-guide-done" class="pf-primary pf-wide">Вернуться к измерению</button>
+    </section>
+
+<section id="pf-entry-panel" hidden>
+     <h2 id="pf-entry-title">Новая запись</h2><div class="pf-chips" aria-label="Тип записи"><button type="button" data-mode="pef" aria-pressed="true">Измерение ПСВ</button><button type="button" data-mode="event" aria-pressed="false">Симптомы / ингалятор</button></div><p class="pf-sub" id="pf-entry-hint">Три попытки · сохраняется лучший результат</p>
+     <form id="pf-form" novalidate>
+      <div class="pf-grid"><label>Дата<input id="pf-date" type="date" min="1900-01-01"></label><label id="pf-slot-label">Измерение<select id="pf-slot"><option value="pm">Вечер</option><option value="am">Утро</option></select></label><label id="pf-event-time-label" hidden>Время события<input id="pf-event-time" type="time" value="12:00"></label></div>
+      <div id="pf-event-kind-wrap" class="pf-box" hidden><label>Что произошло<select id="pf-event-kind"><option value="symptoms">Самочувствие / применение препарата</option><option value="infection">ОРВИ / инфекция — отметка пациента</option><option value="therapy">Изменение назначенной терапии</option><option value="note">Другое событие</option></select></label></div>
+      <div id="pf-pef-fields">
+      <button type="button" class="pf-wide" id="pf-guide-entry">Как правильно измерить ПСВ</button>
+      <div id="pf-guide-invitation" class="pf-box"><strong>Первое измерение?</strong><p class="pf-sub">Прочитайте короткую памятку перед началом.</p><div class="pf-row"><button type="button" id="pf-guide-first">Прочитать памятку</button><button type="button" id="pf-guide-dismiss">Больше не показывать</button></div></div>
+      <div class="pf-attempts"><label>Попытка 1<input id="pf-a1" type="number" inputmode="numeric" min="1" step="1" placeholder="—"></label><label>Попытка 2<input id="pf-a2" type="number" inputmode="numeric" min="1" step="1" placeholder="—"></label><label>Попытка 3<input id="pf-a3" type="number" inputmode="numeric" min="1" step="1" placeholder="—"></label></div>
+      <div class="pf-attempts" id="pf-extra-attempts"><label id="pf-a4-label" hidden>Попытка 4<input id="pf-a4" type="number" inputmode="numeric" min="1" step="1" placeholder="—"></label><label id="pf-a5-label" hidden>Попытка 5<input id="pf-a5" type="number" inputmode="numeric" min="1" step="1" placeholder="—"></label></div>
+      <p id="pf-repeatability" class="pf-sub" aria-live="polite" hidden></p><button type="button" id="pf-add-attempt" hidden>Добавить попытку</button><button type="button" id="pf-remove-attempt" hidden>Убрать пустую попытку</button>
+      <div class="pf-box pf-row" aria-live="polite"><span>Лучший результат</span><span><strong class="pf-best" id="pf-best">—</strong> л/мин</span></div>
+      </div>
+      <div id="pf-feedback" class="pf-zone" hidden></div>
+      <div class="pf-box"><label>Самочувствие<select id="pf-symptom"><option value="unknown">Не отмечено</option><option value="none">Жалоб нет</option><option value="cough">Кашель</option><option value="wheeze">Свистящее дыхание</option><option value="breathless">Одышка</option><option value="severe">Тяжело дышать и говорить</option></select></label><label style="margin-top:12px">Пробуждение из-за симптомов в ночь на эту дату<select id="pf-night"><option value="unknown">Не отмечено</option><option value="yes">Да</option><option value="no">Нет</option></select></label><label style="margin-top:12px">Препарат для облегчения симптомов<select id="pf-reliever"><option value="unknown">Не отмечено</option><option value="no">Не использовал</option><option value="yes">Использовал</option></select></label></div>
+      <div class="pf-box"><h3>Применение препаратов</h3><div class="pf-chips" aria-label="Выбрать использованный препарат"><button type="button" data-med="salbutamol" aria-pressed="false">Сальбутамол</button><button type="button" data-med="berodual" aria-pressed="false">Беродуал</button><button type="button" data-med="smart" aria-pressed="false">Мой препарат SMART</button></div><p id="pf-smart-hint" class="pf-sub"></p><div id="pf-med-details"></div></div>
+      <div class="pf-box"><label id="pf-context-wrap">ПСВ относительно ингаляции<select id="pf-context"><option value="unknown">Не указано</option><option value="before">До ингаляции</option><option value="after">После ингаляции</option></select></label><label style="margin-top:14px">Заметка<textarea id="pf-note" rows="2" maxlength="160" placeholder="Нагрузка, простуда, контакт с аллергеном…"></textarea></label></div>
+      <p id="pf-error" class="pf-error" role="alert"></p><button class="pf-primary pf-wide" type="button" id="pf-save">Сохранить в дневник</button><button type="button" id="pf-new-event" class="pf-wide" hidden>Ещё одно событие</button>
+     </form>
+    </section>
+    <section id="pf-settings-panel" class="pf-settings" hidden>
+     <h2>Настройки врача</h2><p class="pf-sub">Перенесите назначения со своего плана лечения</p>
+     <div class="pf-box"><h3>Пациент</h3><label>Имя или псевдоним<input id="pf-patient-name" maxlength="80" autocomplete="off"></label><label>Дата рождения (необязательно)<input id="pf-birth" type="date"></label><p class="pf-sub">Дата рождения помогает определять возраст для опросников. Без неё указывайте возраст на дату назначения и заполнения вручную.</p></div><button type="button" id="pf-guide-settings" class="pf-wide">Инструкция по пикфлоуметрии</button>
+     <div class="pf-box"><h3>Наблюдение дома</h3><label>Назначенная длительность, дней<input id="pf-monitor-days" type="number" min="1" max="365" step="1" placeholder="Не указана"></label><p class="pf-sub">Например, 14–21 день по назначению врача. Срок можно увеличить при продолжении наблюдения; прежние записи сохраняются.</p></div>
+     <div class="pf-box"><h3>Ориентиры ПСВ</h3><p id="pf-observed" class="pf-sub"></p>
+      <label>Личный лучший, подтверждённый врачом, л/мин<input id="pf-confirmed" type="number" min="1" step="1"></label>
+      <div class="pf-grid"><label>Возраст, лет<input id="pf-age" type="number" min="0" max="120" step="1"></label><label>Рост, см<input id="pf-height" type="number" min="1" max="250" step="0.1"></label></div>
+      <label id="pf-sex-label">Таблица по полу<select id="pf-sex"><option value="">Выберите для возраста от 15 лет</option><option value="female">Женская</option><option value="male">Мужская</option></select></label>
+      <div id="pf-predicted-preview" aria-live="polite"></div>
+      <label>Как задаётся ориентир врача<select id="pf-target-mode"><option value="manual">Врач вводит вручную</option><option value="table">Использовать должный ПСВ по таблице</option></select></label>
+      <label>Целевой ПСВ врача, л/мин<input id="pf-target" type="number" min="1" step="1"></label>
+      <label>Основание оценки<input id="pf-source" type="text" maxlength="120" placeholder="Таблица / формула / заключение на приёме"></label>
+      <p class="pf-sub">Должный ПСВ — ориентир по предоставленным врачом таблицам. Личный лучший и границы индивидуального плана задаются отдельно. Возраст и рост относятся к дате применения настроек.</p>
+     </div>
+     <div class="pf-box"><h3>Основа цветовых зон</h3>
+      <label>100% — это<select id="pf-basis"><option value="target">Целевой ПСВ, заданный врачом</option><option value="confirmed">Подтверждённый личный лучший</option></select></label>
+      <div class="pf-grid"><label>Зелёная зона от, %<input id="pf-green" type="number" min="1" max="100" step="1"></label><label>Красная зона ниже, %<input id="pf-red" type="number" min="1" max="99" step="1"></label></div>
+      <div id="pf-zone-preview" class="pf-zones" aria-live="polite"></div>
+      <label>Применять настройки и назначение с даты<input id="pf-effective" type="date" min="1900-01-01"></label>
+      <p class="pf-sub">Зоны до этой даты сохраняются. Жёлтая зона находится между красной и зелёной границами.</p>
+     </div>
+          <div class="pf-box" id="pf-baseline-settings">
+      <h3>Назначенная базисная терапия</h3>
+      <label>Назначение врача<select id="pf-baseline-status"><option value="unknown">Не указано</option><option value="prescribed">Препарат назначен</option><option value="none">Не назначена / отменена врачом</option></select></label>
+      <div id="pf-baseline-fields" hidden>
+       <label>Название препарата<input id="pf-baseline-name" type="text" maxlength="120" placeholder="Из назначения врача"></label>
+       <button type="button" id="pf-baseline-smart" class="pf-wide">Взять препарат из настройки SMART</button>
+       <label>Дозировка и форма препарата<input id="pf-baseline-strength" type="text" maxlength="120" placeholder="Как указано на препарате и в назначении"></label>
+       <label>Назначенная схема приёма<textarea id="pf-baseline-schedule" rows="3" maxlength="300" placeholder="Количество за один приём, кратность и время — из назначения врача"></textarea></label>
+      </div>
+      <p class="pf-sub">Перенесите назначение врача. Название обязательно; неизвестные дозировку и схему можно оставить пустыми. Приложение не подбирает дозы. Назначение будет показано в отчёте отдельно от записанных применений.</p>
+      <p class="pf-sub">Изменения действуют с даты применения настроек. Чтобы сохранить прежнюю схему за предыдущие дни, укажите дату начала новой.</p>
+     </div>
+
+<div class="pf-box"><h3>Назначенная SMART-терапия</h3>
+      <label class="pf-check"><input type="checkbox" id="pf-smart-enabled">SMART назначена врачом</label>
+      <div id="pf-smart-config"><label>Комбинация ИГКС/формотерол<select id="pf-smart-name"><option value="budesonide">Будесонид / формотерол</option><option value="beclometasone">Беклометазон / формотерол</option></select></label><label>Название ингалятора и дозировка<input id="pf-smart-product" type="text" maxlength="100" placeholder="Перенести из назначения врача"></label></div>
+      <p class="pf-sub">Комбинацию, устройство, дозировку и допустимость по возрасту определяет врач. Приложение не рассчитывает дозы.</p>
+     </div>
+     <details class="pf-box pf-device"><summary><strong>Данные, резервная копия и установка</strong></summary>
+ <p>Записи хранятся только в этом браузере на этом устройстве. Без аккаунта и отправки врачу. На другом телефоне дневник будет пустым, пока вы не восстановите копию.</p>
+ <p>Очистка данных браузера или потеря телефона может удалить дневник. Сохраняйте копию регулярно и перед переносом на другой телефон. В приватном режиме записи могут исчезнуть при закрытии браузера.</p>
+ <button type="button" id="pf-backup" class="pf-wide">Скачать резервную копию</button>
+ <p class="pf-sub">Файл содержит дневник и назначения всех профилей. Храните его в защищённом месте. Копия не зашифрована.</p>
+ <label>Восстановить из файла<input type="file" id="pf-import" accept="application/json,.json"></label>
+ <div id="pf-import-preview" hidden><p id="pf-import-description"></p><button type="button" id="pf-import-confirm">Заменить данные этой копией</button><button type="button" id="pf-import-cancel">Отмена</button></div>
+ <p id="pf-data-message" role="status"></p>
+ <button type="button" id="pf-install" class="pf-wide" hidden>Установить на главный экран</button>
+ <p><strong>iPhone:</strong> откройте ссылку в Safari → «Поделиться» → «На экран “Домой”».</p>
+ <p><strong>Android:</strong> меню Chrome → «Добавить на главный экран» или «Установить приложение».</p>
+ <p id="pf-offline-status" class="pf-sub">Подготовка работы без интернета…</p>
+ <p class="pf-sub">После установки проверьте, что дневник виден при запуске с иконки. При необходимости перенесите его резервной копией.</p>
+ <button type="button" id="pf-update" class="pf-wide" hidden>Обновление готово — перезапустить</button>
+ <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
+ <p class="pf-sub">Версия 1.0 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
+</details>
+<p id="pf-settings-error" class="pf-error" role="alert"></p><button type="button" id="pf-settings-save" class="pf-primary pf-wide">Сохранить профиль и назначения</button>
+    </section>
+    <section id="pf-report-panel" hidden>
+     <h2>К следующему приёму</h2><p class="pf-sub">Сводка из записей пациента</p>
+     <label>Период заканчивается<input type="date" id="pf-range-end-report"></label><button type="button" id="pf-print" class="pf-primary pf-wide">Печать / сохранить PDF</button><div class="pf-range" aria-label="Период отчёта"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
+     <div class="pf-box"><div id="pf-summary"></div></div>
+     <div class="pf-box"><h3>Контроль астмы · опросники</h3><p class="pf-sub">Ответы и результаты по датам. Шкалы оцениваются отдельно от ПСВ.</p><button type="button" id="pf-control-new" class="pf-primary pf-wide">Пройти опросник</button><div id="pf-control-report"></div></div>
+     <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-report-reference"></div></div>
+     <div class="pf-box"><h3>ПСВ и события за период</h3><svg id="pf-report-chart" class="pf-chart" role="img" aria-label="ПСВ и события за период отчёта"></svg><p class="pf-sub">Круги — утро, квадраты — вечер. Нижние строки — количество отмеченных событий. Совпадение по времени не устанавливает причину.</p></div>
+     <div class="pf-box"><h3>Назначенная базисная терапия</h3><div id="pf-baseline-report"></div></div>
+     <div class="pf-box"><h3>Применение препаратов</h3><div id="pf-med-summary"></div></div>
+     <div class="pf-box"><details><summary>Настройки и метод подсчёта</summary><div id="pf-report-method"></div></details></div>
+     <div class="pf-box"><details><summary>Подробные записи</summary><div id="pf-records"></div></details></div>
+     <p class="pf-sub" style="margin-top:16px">Чтобы получить PDF, нажмите «Печать / сохранить PDF» и выберите сохранение в системном меню.</p>
+    </section>
+    <section id="pf-control-panel" hidden>
+     <h2>Контроль астмы</h2><p class="pf-sub">Выберите один ответ на каждый вопрос. Баллы рассчитываются автоматически.</p>
+     <div class="pf-box">
+      <div class="pf-grid"><label>Дата заполнения<input id="pf-control-date" type="date" min="1900-01-01"></label><label>Возраст на эту дату, полных лет<input id="pf-control-age" type="number" min="0" max="120" step="1"></label></div>
+      <label class="pf-score-item">Опросник<select id="pf-control-type"></select></label>
+      <p id="pf-control-age-note" class="pf-sub"></p>
+      <p id="pf-control-period" class="pf-sub"></p><p id="pf-control-respondent" class="pf-sub"></p>
+      <details><summary>Русский бланк и источник</summary><p id="pf-control-source" class="pf-sub"></p><p id="pf-control-url" class="pf-source-url"></p><p class="pf-sub">Адрес оригинального бланка можно выделить и скопировать.</p></details>
+     </div>
+     <div class="pf-box"><h3 id="pf-control-heading">Вопросы</h3><p id="pf-control-instructions" class="pf-sub"></p><p id="pf-control-translation" class="pf-sub" hidden></p><details id="pf-control-eligibility" hidden><summary>Для кого предназначен TRACK</summary><p id="pf-control-eligibility-text" class="pf-sub"></p></details><div id="pf-control-points"></div><p id="pf-control-copyright" class="pf-sub"></p></div>
+     <div class="pf-box" id="pf-control-reliever-wrap"><label>Препарат облегчения на дату заполнения<select id="pf-control-reliever"><option value="unknown">Не уточнён</option><option value="saba">КДБА, например сальбутамол</option><option value="ics_formoterol">ИГКС / формотерол, включая SMART</option><option value="ics_saba">ИГКС / КДБА</option><option value="other">Другой препарат — уточнить с врачом</option></select></label></div>
+     <div class="pf-box" id="pf-control-result" aria-live="polite"></div>
+     <p id="pf-control-error" class="pf-error" role="alert"></p><button type="button" id="pf-control-save" class="pf-primary pf-wide">Сохранить результат в отчёт</button><button type="button" id="pf-control-back" class="pf-wide">Вернуться к отчёту</button>
+    </section>
+    <p id="pf-status" class="pf-sub" role="status" aria-live="polite"></p>
+   </main>
+   <div class="pf-footer">Данные остаются в этом браузере. Делайте резервные копии в разделе «Профиль». Дневник не отправляется врачу автоматически.</div>
+   <nav inert class="pf-tabs" aria-label="Разделы дневника"><button type="button" data-screen="graph" aria-pressed="true"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>Динамика</button><button type="button" data-screen="entry" aria-pressed="false"><i data-lucide="circle-plus" aria-hidden="true"></i>Записать</button><button type="button" data-screen="report" aria-pressed="false"><i data-lucide="file-text" aria-hidden="true"></i>Отчёт</button><button type="button" data-screen="settings" aria-pressed="false"><i data-lucide="sliders-horizontal" aria-hidden="true"></i>Профиль</button></nav>
+  </section>
+ </div>
+</div>
+<noscript>Для дневника включите JavaScript в браузере.</noscript><script src="./storage.js"></script><script src="./app.js"></script><script src="./install.js"></script></body></html>
