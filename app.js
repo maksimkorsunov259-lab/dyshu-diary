@@ -50,13 +50,13 @@ const controlContent={
  },
  ACT:{
   source:'GSK · русская версия ACT · ноябрь 2024 · NP-GBL-ASU-WCNT-190001',
-  url:'https://www.asthmacontroltest.com/ru-ru/quiz/adult-quiz/',version:'ACT-RU-GSK2024-full-v1',
+  url:'https://www.asthmacontroltest.com/ru-ru/quiz/adult-quiz/',version:'ACT-RU-GSK2024-full-v2',
   copyright:'Asthma Control Test™ © QualityMetric Incorporated 2002, 2004, 2009. Все права защищены. Asthma Control Test — товарный знак QualityMetric. © 2024 Группа компаний GSK. Все права защищены.',
   questions:[
    adult('Как часто за последние 4 недели астма ограничивала вашу деятельность на работе, в школе или дома по сравнению с обычным уровнем?',['Всё время','Большую часть времени','Иногда','Редко','Ни разу']),
    adult('Как часто за последние 4 недели у вас была одышка?',['Более одного раза в день','Один раз в день','Три-шесть раз в неделю','Один или два раза в неделю','Ни разу']),
    adult('Как часто за последние 4 недели симптомы астмы (свистящее дыхание, кашель, одышка, стеснение или боль в груди) будили вас ночью или раньше обычного утром?',['Четыре или больше ночей в неделю','Две или три ночи в неделю','Один раз в неделю','Один или два раза','Ни разу']),
-   adult('Как часто за последние 4 недели вам приходилось применять бронхорасширяющее средство экстренной помощи (например, Сальбутамол, Вентолин или Беротек) через ингалятор или небулайзер?',['Три раза в день или чаще','Один или два раза в день','Две или три раза в неделю','Один раз в неделю или реже','Ни разу']),
+   adult('Как часто за последние 4 недели вам приходилось применять бронхорасширяющее средство экстренной помощи (например, Сальбутамол, Вентолин или Беротек) через ингалятор или небулайзер?',['Три раза в день или чаще','Один или два раза в день','Два или три раза в неделю','Один раз в неделю или реже','Ни разу']),
    adult('Как бы вы оценили степень контроля астмы за последние 4 недели?',['Полное отсутствие контроля','Плохой контроль','Некоторая степень контроля','Хороший контроль','Полный контроль'])
   ]
  },
@@ -607,6 +607,11 @@ function calculatePredicted({age,height,sex}){
   assessments[state.profile]=[...assessments[state.profile].filter(a=>a.id!==assessmentId),saved];
   ending=r.date;el('status').textContent='Результат добавлен в отчёт.';show('report');
  });
+
+ // Modal leaves the active screen and all draft fields untouched.
+ const aboutDialog=el('about');
+ root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
+ el('about-close').addEventListener('click',()=>aboutDialog.close());
 
  // Device-local persistence, versioned backups, date navigation and printing.
  let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
