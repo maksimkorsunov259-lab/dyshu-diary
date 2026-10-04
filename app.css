@@ -96,3 +96,17 @@ html {background:#f3f7f6;color-scheme:light}body{margin:0}#pf-demo{min-height:10
  #pf-demo .pf-author figure{grid-column:2;justify-self:start;width:112px}
  #pf-demo .pf-author figcaption{font-size:12px}
 }
+
+/* Brand colors stay separate from clinical green/yellow/red zone tokens. */
+html{background:#f2f8fd}
+#pf-demo{--pf-bg:#f2f8fd;--pf-paper:#ffffff;--pf-text:#12365a;--pf-muted:#506781;--pf-line:#d5e4f1;--pf-accent:#086fb8;--pf-on:#ffffff}
+#pf-demo .pf-header{background:linear-gradient(135deg,#ffffff 20%,#e3f5ff 100%);border-bottom:1px solid var(--pf-line)}
+#pf-demo .pf-brand-title{display:flex;gap:12px;align-items:center;min-width:0}
+#pf-demo .pf-brand-icon{display:block;width:48px;height:48px;border-radius:13px;flex-shrink:0}
+#pf-demo .pf-brand-title strong{color:#103a69}
+#pf-demo .pf-demo-label{background:#fff;color:var(--pf-muted);white-space:nowrap}
+#pf-demo :focus-visible{outline-color:#086fb8}
+#pf-demo #pf-about::backdrop{background:rgb(13 37 64 / 55%)}
+#pf-demo input[type=checkbox],#pf-demo input[type=radio]{accent-color:var(--pf-accent)}
+@media(max-width:380px){#pf-demo .pf-brand{gap:8px}#pf-demo .pf-brand-title{gap:8px}#pf-demo .pf-brand-title strong{font-size:20px}#pf-demo .pf-brand-icon{width:40px;height:40px}#pf-demo .pf-demo-label{font-size:11px;padding:3px 6px}}
+@media print{html,body,#pf-demo{color:#12365a!important}}
