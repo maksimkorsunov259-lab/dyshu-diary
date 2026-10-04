@@ -14,6 +14,7 @@
      <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button></div>
      <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-reference-summary"></div><div id="pf-zone-legend" class="pf-zones"></div><button type="button" id="pf-configure" class="pf-wide">Настройки врача</button></div>
      <aside class="pf-box pf-author" aria-label="Создатель приложения">
+      <img class="pf-author-photo" src="./author-photo.png" width="112" height="112" alt="Коршунов Максим Александрович — создатель приложения">
       <div><p class="pf-sub">Создатель приложения</p><h3>Коршунов Максим Александрович</h3><p>Аллерголог-иммунолог, педиатр</p><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Страница врача · Taplink</a><p><button type="button" data-open-about>О приложении</button></p></div>
       <figure><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink врача"><img src="./author-qr.png" width="112" height="112" alt="QR-код на Taplink Коршунова Максима Александровича"></a><figcaption>Страница врача</figcaption></figure>
      </aside>
@@ -98,7 +99,7 @@
           <div class="pf-box" id="pf-baseline-settings">
       <h3>Назначенная базисная терапия</h3>
       <label>Назначение врача<select id="pf-baseline-status"><option value="unknown">Не указано</option><option value="prescribed">Препарат назначен</option><option value="none">Не назначена / отменена врачом</option></select></label>
-      <div id="pf-baseline-fields" hidden>
+      <div id="pf-baseline-fields" hidden><label>Препарат из назначения врача<select id="pf-baseline-picker"><option value="">Другой препарат / ручной ввод</option></select></label><p class="pf-sub">Выбирайте только назначенный врачом вариант. Концентрация препарата не определяет количество ингаляций или частоту приёма.</p><p id="pf-baseline-picker-status" class="pf-sub" role="status"></p>
        <label>Название препарата<input id="pf-baseline-name" type="text" maxlength="120" placeholder="Из назначения врача"></label>
        <button type="button" id="pf-baseline-smart" class="pf-wide">Взять препарат из настройки SMART</button>
        <label>Дозировка и форма препарата<input id="pf-baseline-strength" type="text" maxlength="120" placeholder="Как указано на препарате и в назначении"></label>
@@ -165,7 +166,7 @@
     <button type="button" id="pf-about-close" autofocus>← Вернуться в дневник</button>
     <h2 id="pf-about-title">О приложении</h2>
     <p>«Дышу» — дневник домашней пикфлоуметрии для взрослых и детей с бронхиальной астмой. Он помогает записывать измерения ПСВ, симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>
-    <div class="pf-box pf-author"><div><p class="pf-sub">Создатель приложения</p><h3>Коршунов Максим Александрович</h3><p>Аллерголог-иммунолог, педиатр</p><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Моя страница · Taplink</a></div><figure><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink врача"><img src="./author-qr.png" width="144" height="144" alt="QR-код на Taplink Коршунова Максима Александровича"></a><figcaption>Страница врача</figcaption></figure></div>
+    <div class="pf-box pf-author"><img class="pf-author-photo" src="./author-photo.png" width="112" height="112" alt="Коршунов Максим Александрович — создатель приложения"><div><p class="pf-sub">Создатель приложения</p><h3>Коршунов Максим Александрович</h3><p>Аллерголог-иммунолог, педиатр</p><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Моя страница · Taplink</a></div><figure><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink врача"><img src="./author-qr.png" width="144" height="144" alt="QR-код на Taplink Коршунова Максима Александровича"></a><figcaption>Страница врача</figcaption></figure></div>
     <h3>Ваш дневник — на вашем устройстве</h3><p>Приложение работает без регистрации. Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>
     <p class="pf-sub">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>
    </dialog>

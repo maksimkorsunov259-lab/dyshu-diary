@@ -435,7 +435,7 @@ function calculatePredicted({age,height,sex}){
   const c=config(today());
   el('patient-name').value=profiles[state.profile].label;el('birth').value=profiles[state.profile].birth;
   el('monitor-days').value=c.monitorDays??'';
-  const b=baselineValue(c);el('baseline-status').value=b.status;el('baseline-name').value=b.name;el('baseline-strength').value=b.strength;el('baseline-schedule').value=b.schedule;
+  const b=baselineValue(c);el('baseline-status').value=b.status;el('baseline-name').value=b.name;el('baseline-strength').value=b.strength;el('baseline-schedule').value=b.schedule;syncBaselinePicker();
   for(const key of ['confirmed','target','basis','green','red','age','height','source','sex'])el(key).value=c[key]??'';
   el('target-mode').value=c.targetMode||'manual';
   el('effective').value=today();el('smart-enabled').checked=c.smartEnabled;el('smart-name').value=c.smartName;el('smart-product').value=c.smartProduct;
@@ -612,6 +612,26 @@ function calculatePredicted({age,height,sex}){
  const aboutDialog=el('about');
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
+
+ // This catalog fills existing prescription fields; it never selects treatment by age.
+ const baselineCatalog=[{"id": "flixotide-50", "name": "Флутиказона пропионат (Фликсотид)", "strength": "Аэрозоль для ингаляций дозированный, 50 мкг/доза", "label": "Фликсотид — 50 мкг/доза · аэрозоль"}, {"id": "flixotide-100", "name": "Флутиказона пропионат (Фликсотид)", "strength": "Аэрозоль для ингаляций дозированный, 100 мкг/доза", "label": "Фликсотид — 100 мкг/доза · аэрозоль"}, {"id": "pulmicort-025", "name": "Будесонид (Пульмикорт)", "strength": "Суспензия для ингаляций, 0,25 мг/мл", "label": "Пульмикорт — 0,25 мг/мл · суспензия"}, {"id": "pulmicort-05", "name": "Будесонид (Пульмикорт)", "strength": "Суспензия для ингаляций, 0,5 мг/мл", "label": "Пульмикорт — 0,5 мг/мл · суспензия"}, {"id": "symbicort-80", "name": "Симбикорт Турбухалер", "strength": "80/4,5 мкг/доза", "label": "Симбикорт Турбухалер — 80/4,5 мкг/доза"}, {"id": "symbicort-160", "name": "Симбикорт Турбухалер", "strength": "160/4,5 мкг/доза", "label": "Симбикорт Турбухалер — 160/4,5 мкг/доза"}, {"id": "seretide-50-100", "name": "Серетид Мультидиск (салметерол + флутиказон)", "strength": "50 мкг + 100 мкг/доза", "label": "Серетид Мультидиск — 50 + 100 мкг/доза"}, {"id": "foster-100", "name": "Фостер", "strength": "100/6 мкг/доза", "label": "Фостер — 100/6 мкг/доза"}, {"id": "relvar-92", "name": "Релвар Эллипта", "strength": "22/92 мкг/доза", "label": "Релвар Эллипта — 22/92 мкг/доза"}, {"id": "relvar-184", "name": "Релвар Эллипта", "strength": "22/184 мкг/доза", "label": "Релвар Эллипта — 22/184 мкг/доза"}, {"id": "spiriva-25", "name": "Спирива Респимат", "strength": "2,5 мкг/доза", "label": "Спирива Респимат — 2,5 мкг/доза"}];
+ const baselinePicker=el('baseline-picker');
+ for(const item of baselineCatalog){const option=document.createElement('option');option.value=item.id;option.textContent=item.label;baselinePicker.append(option);}
+ function syncBaselinePicker(){
+  baselinePicker.value=baselineCatalog.find(item=>item.name===el('baseline-name').value&&item.strength===el('baseline-strength').value)?.id||'';
+  el('baseline-picker-status').textContent='';
+ }
+ baselinePicker.addEventListener('change',()=>{
+  const selected=baselineCatalog.find(item=>item.id===baselinePicker.value);
+  if(!selected){el('baseline-picker-status').textContent='Введите или отредактируйте название и дозировку ниже.';return;}
+  const changed=el('baseline-name').value!==selected.name||el('baseline-strength').value!==selected.strength;
+  el('baseline-name').value=selected.name;
+  el('baseline-strength').value=selected.strength;
+  if(changed)el('baseline-schedule').value='';
+  el('baseline-picker-status').textContent='Название и дозировка заполнены. Укажите схему применения из назначения врача и сохраните профиль.';
+ });
+ for(const id of ['baseline-name','baseline-strength'])el(id).addEventListener('input',syncBaselinePicker);
+ el('baseline-smart').addEventListener('click',syncBaselinePicker);
 
  // Device-local persistence, versioned backups, date navigation and printing.
  let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
