@@ -264,7 +264,7 @@ function calculatePredicted({age,height,sex}){
  el('today-title').textContent=shortDate(today());
  el('range-end').value=ending;el('range-end-report').value=ending;
  for(const o of el('profile').options)o.textContent=profiles[o.value].label;
-  el('reference-summary').replaceChildren(text('p',`Лучший в дневнике: ${observed()} л/мин`),text('p',`Подтверждённый личный лучший: ${c.confirmed??'—'} л/мин`,'pf-sub'),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ врача: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
+  el('reference-summary').replaceChildren(text('p',`Лучший в дневнике: ${observed()} л/мин`),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ врача: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
   fillZones(el('zone-legend'),c);
   el('today').replaceChildren();
   for(const slot of ['am','pm']){const r=records().find(r=>r.date===today()&&r.slot===slot);const row=text('div','','pf-row pf-record');row.append(text('span',slot==='am'?'Утро':'Вечер'),text('strong',r?`${r.pef} л/мин`:'Не записано','pf-data'));el('today').append(row);}
@@ -641,7 +641,7 @@ function calculatePredicted({age,height,sex}){
  function persist(){
   if(!storageReady)return;
   const data=snapshot();pendingWrites++;unsaved=true;saveStatus.textContent='Сохраняем на устройстве…';saveStatus.dataset.error='false';
-  saveQueue=saveQueue.then(()=>DiaryStore.write(data)).then(()=>{failedWrite=false;saveStatus.textContent='Сохранено на этом устройстве';saveStatus.dataset.error='false';}).catch(e=>{failedWrite=true;saveStatus.dataset.error='true';saveStatus.textContent='Изменения НЕ сохранены. '+e.message+' Скачайте резервную копию из профиля, чтобы не потерять введённое.';}).finally(()=>{pendingWrites--;unsaved=failedWrite||pendingWrites>0;});
+  saveQueue=saveQueue.then(()=>DiaryStore.write(data)).then(()=>{failedWrite=false;saveStatus.textContent='';saveStatus.dataset.error='false';}).catch(e=>{failedWrite=true;saveStatus.dataset.error='true';saveStatus.textContent='Изменения НЕ сохранены. '+e.message+' Скачайте резервную копию из профиля, чтобы не потерять введённое.';}).finally(()=>{pendingWrites--;unsaved=failedWrite||pendingWrites>0;});
   return saveQueue;
  }
  function validateSnapshot(s){
@@ -696,7 +696,7 @@ function calculatePredicted({age,height,sex}){
  window.addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
  const refreshDates=()=>{root.querySelectorAll('input[type=date]').forEach(input=>{input.min='1900-01-01';input.max=today();});};refreshDates();el('date').value=today();el('control-date').value=today();el('effective').value=today();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDates();});
- try{const saved=await DiaryStore.read();databaseReady=true;if(saved)applySnapshot(validateSnapshot(saved));storageReady=true;saveStatus.textContent=saved?'Дневник открыт с этого устройства':'Пустой дневник. Начните с профиля или первого измерения.';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
+ try{const saved=await DiaryStore.read();databaseReady=true;if(saved)applySnapshot(validateSnapshot(saved));storageReady=true;saveStatus.textContent=saved?'':'Пустой дневник. Начните с профиля или первого измерения.';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
  root.querySelector('.pf-content').inert=false;el('profile').disabled=false;root.querySelector('.pf-tabs').inert=false;
  el('loading').hidden=true;
 
