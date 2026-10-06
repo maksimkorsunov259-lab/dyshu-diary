@@ -80,21 +80,21 @@
      <div class="pf-box"><h3>Пациент</h3><label>Имя или псевдоним<input id="pf-patient-name" maxlength="80" autocomplete="off"></label><label>Дата рождения (необязательно)<input id="pf-birth" type="date"></label><p class="pf-sub">Дата рождения помогает определять возраст для опросников. Без неё указывайте возраст на дату назначения и заполнения вручную.</p></div><button type="button" id="pf-guide-settings" class="pf-wide">Инструкция по пикфлоуметрии</button>
      <div class="pf-box"><h3>Наблюдение дома</h3><label>Назначенная длительность, дней<input id="pf-monitor-days" type="number" min="1" max="365" step="1" placeholder="Не указана"></label><p class="pf-sub">Например, 14–21 день по назначению врача. Срок можно увеличить при продолжении наблюдения; прежние записи сохраняются.</p></div>
      <div class="pf-box"><h3>Ориентиры ПСВ</h3><p id="pf-observed" class="pf-sub"></p>
-      <label>Личный лучший, подтверждённый врачом, л/мин<input id="pf-confirmed" type="number" min="1" step="1"></label>
+      <input id="pf-confirmed" type="hidden">
       <div class="pf-grid"><label>Возраст, лет<input id="pf-age" type="number" min="0" max="120" step="1"></label><label>Рост, см<input id="pf-height" type="number" min="1" max="250" step="0.1"></label></div>
       <label id="pf-sex-label">Таблица по полу<select id="pf-sex"><option value="">Выберите для возраста от 15 лет</option><option value="female">Женская</option><option value="male">Мужская</option></select></label>
       <div id="pf-predicted-preview" aria-live="polite"></div>
       <label>Как задаётся ориентир врача<select id="pf-target-mode"><option value="manual">Врач вводит вручную</option><option value="table">Использовать должный ПСВ по таблице</option></select></label>
-      <label>Целевой ПСВ врача, л/мин<input id="pf-target" type="number" min="1" step="1"></label>
+      <label>Целевой ПСВ, одобренный врачом, л/мин<input id="pf-target" type="number" min="1" step="1"></label>
       <label>Основание оценки<input id="pf-source" type="text" maxlength="120" placeholder="Таблица / формула / заключение на приёме"></label>
-      <p class="pf-sub">Должный ПСВ — ориентир по предоставленным врачом таблицам. Личный лучший и границы индивидуального плана задаются отдельно. Возраст и рост относятся к дате применения настроек.</p>
+      <p class="pf-sub">Должный ПСВ — ориентир по предоставленным врачом таблицам. Целевой ПСВ и основу цветовых зон согласуйте с врачом. Максимум дневника сам по себе не меняет границы зон. Возраст и рост относятся к дате применения настроек.</p>
      </div>
      <div class="pf-box"><h3>Основа цветовых зон</h3>
-      <label>100% — это<select id="pf-basis"><option value="target">Целевой ПСВ, заданный врачом</option><option value="confirmed">Подтверждённый личный лучший</option></select></label>
+      <label>100% — это<select id="pf-basis"><option value="target">Целевой ПСВ, одобренный врачом</option><option value="predicted">Должный ПСВ по таблице</option><option value="confirmed" id="pf-legacy-basis" disabled hidden>Прежний личный лучший — выберите новую основу</option></select></label>
       <div class="pf-grid"><label>Зелёная зона от, %<input id="pf-green" type="number" min="1" max="100" step="1"></label><label>Красная зона ниже, %<input id="pf-red" type="number" min="1" max="99" step="1"></label></div>
       <div id="pf-zone-preview" class="pf-zones" aria-live="polite"></div>
       <label>Применять настройки и назначение с даты<input id="pf-effective" type="date" min="1900-01-01"></label>
-      <p class="pf-sub">Зоны до этой даты сохраняются. Жёлтая зона находится между красной и зелёной границами.</p>
+      <p class="pf-sub">Зоны до этой даты сохраняются. Жёлтая зона находится между красной и зелёной границами. Должный ПСВ рассчитывается по возрасту, росту и выбранной таблице; вне её диапазона использовать его как основу зон нельзя.</p>
      </div>
           <div class="pf-box" id="pf-baseline-settings">
       <h3>Назначенная базисная терапия</h3>
@@ -111,8 +111,8 @@
 
 <div class="pf-box"><h3>Назначенная SMART-терапия</h3>
       <label class="pf-check"><input type="checkbox" id="pf-smart-enabled">SMART назначена врачом</label>
-      <div id="pf-smart-config"><label>Комбинация ИГКС/формотерол<select id="pf-smart-name"><option value="budesonide">Будесонид / формотерол</option><option value="beclometasone">Беклометазон / формотерол</option></select></label><label>Название ингалятора и дозировка<input id="pf-smart-product" type="text" maxlength="100" placeholder="Перенести из назначения врача"></label></div>
-      <p class="pf-sub">Комбинацию, устройство, дозировку и допустимость по возрасту определяет врач. Приложение не рассчитывает дозы.</p>
+      <div id="pf-smart-config"><label>Комбинация ИГКС/формотерол<select id="pf-smart-name"><option value="budesonide">Будесонид / формотерол · Симбикорт</option><option value="beclometasone">Беклометазон / формотерол · Фостер</option></select></label><label>Препарат и дозировка из назначения<select id="pf-smart-picker"></select></label><label id="pf-smart-custom" hidden>Другой назначенный ингалятор и дозировка<input id="pf-smart-product" type="text" maxlength="100" placeholder="Перенести из назначения врача"></label></div>
+      <p class="pf-sub">Комбинацию, устройство, дозировку и допустимость по возрасту определяет врач. Приложение не рассчитывает дозы. Выбор препарата не является назначением схемы SMART. Фостер 200/6 и Симбикорт 320/9 не предлагаются для облегчения симптомов в режиме SMART.</p>
      </div>
      <details class="pf-box pf-device"><summary><strong>Данные, резервная копия и установка</strong></summary>
  <p>Записи хранятся только в этом браузере на этом устройстве. Без аккаунта и отправки врачу. На другом телефоне дневник будет пустым, пока вы не восстановите копию.</p>
@@ -131,6 +131,18 @@
  <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
  <p class="pf-sub">Версия 1.0 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
 </details>
+<div class="pf-box pf-reminders"><h3>Напоминания о ПСВ</h3>
+ <p class="pf-sub">Выберите удобное время для текущего дневника. Оповещения будут приходить из календаря телефона после добавления событий.</p>
+ <div class="pf-grid"><label>Утро<input type="time" id="pf-reminder-am" value="08:00" required></label><label>Вечер<input type="time" id="pf-reminder-pm" value="21:00" required></label></div>
+ <button type="button" id="pf-reminder-save" class="pf-wide">Сохранить время напоминаний</button>
+ <button type="button" id="pf-reminder-export" class="pf-wide">Скачать для календаря (.ics)</button>
+ <p id="pf-reminder-status" class="pf-sub" role="status"></p>
+ <details><summary>Как включить оповещения</summary>
+ <ol><li>Скачайте файл и добавьте оба ежедневных события в календарь. Имя пациента, показатели и записи дневника в файл не включаются.</li><li>Проверьте утреннее и вечернее время, наличие напоминания в момент события и разрешение на уведомления у календаря.</li><li>Если файл не открывается на телефоне, импортируйте его через функцию импорта вашего календаря на компьютере либо создайте два ежедневных напоминания вручную.</li></ol>
+ <p class="pf-sub">Время задаётся как местное время календаря. После смены часового пояса проверьте расписание. Приложение не может проверить, завершён ли импорт и разрешены ли уведомления.</p>
+ <p class="pf-sub">Изменение времени здесь не обновляет уже добавленные события. Измените их в календаре либо удалите прежние две серии и импортируйте новый файл, чтобы избежать повторов. Отключение — удаление серий в календаре. Напоминания повторяются ежедневно до отмены и не проверяют, внесли ли вы уже ПСВ.</p>
+ </details>
+</div>
 <p id="pf-settings-error" class="pf-error" role="alert"></p><button type="button" id="pf-settings-save" class="pf-primary pf-wide">Сохранить профиль и назначения</button>
     </section>
     <section id="pf-report-panel" hidden>

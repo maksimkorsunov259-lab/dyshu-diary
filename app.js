@@ -194,8 +194,8 @@ function calculatePredicted({age,height,sex}){
  }
  function selected(){return records().filter(r=>r.date>=day(state.days-1)&&r.date<=ending).sort((a,b)=>a.date.localeCompare(b.date)||a.slot.localeCompare(b.slot));}
  function config(date=ending){return histories[state.profile].filter(c=>c.from<=date).at(-1)||{...initialConfig(),from:date};}
- function base(c){return c[c.basis];}
- function basisLabel(c){return c.basis==='target'?'целевого ПСВ врача':'подтверждённого личного лучшего';}
+ function base(c){return c.basis==='predicted'?(c.predicted?.ok?c.predicted.value:null):c[c.basis];}
+ function basisLabel(c){return c.basis==='predicted'?'должного ПСВ по таблице':c.basis==='target'?'целевого ПСВ, одобренного врачом':'личного лучшего из прежнего назначения';}
  function observed(){return records().length?Math.max(...records().map(r=>r.pef)):'—';}
  function number(v){return Number(v.toFixed(2)).toLocaleString('ru-RU');}
  function predictedText(p){return p?.ok?`Должный ПСВ: ${p.value} л/мин · ${p.interpolated?'расчётное значение':'табличное значение'}`:'Должный ПСВ не рассчитан';}
@@ -260,11 +260,11 @@ function calculatePredicted({age,height,sex}){
   root.querySelectorAll('[data-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.days===state.days)));
   el('period').textContent=`${shortDate(day(state.days-1))} — ${shortDate(ending)}`;
   const c=config();
-  el('personal').textContent=base(c)?`100%: ${base(c)} · ${c.basis==='target'?'цель врача':'личный лучший'}`:'Ориентир не задан';
+  el('personal').textContent=base(c)?`100% от ${basisLabel(c)}: ${base(c)} л/мин`:'Ориентир не задан';
  el('today-title').textContent=shortDate(today());
  el('range-end').value=ending;el('range-end-report').value=ending;
  for(const o of el('profile').options)o.textContent=profiles[o.value].label;
-  el('reference-summary').replaceChildren(text('p',`Лучший в дневнике: ${observed()} л/мин`),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ врача: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
+  el('reference-summary').replaceChildren(text('p',`Лучший ПСВ в дневнике: ${observed()} л/мин`),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ, одобренный врачом: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
   fillZones(el('zone-legend'),c);
   el('today').replaceChildren();
   for(const slot of ['am','pm']){const r=records().find(r=>r.date===today()&&r.slot===slot);const row=text('div','','pf-row pf-record');row.append(text('span',slot==='am'?'Утро':'Вечер'),text('strong',r?`${r.pef} л/мин`:'Не записано','pf-data'));el('today').append(row);}
@@ -421,7 +421,7 @@ function calculatePredicted({age,height,sex}){
  }
  function validSettings(c){
   const pef=n=>Number.isInteger(n)&&n>0&&n<10000;
-  return validBaseline(c)&&(c.monitorDays===null||Number.isInteger(c.monitorDays)&&c.monitorDays>=1&&c.monitorDays<=365)&&['manual','table'].includes(c.targetMode)&&['','male','female'].includes(c.sex)&&(c.targetMode!=='table'||c.predicted.ok)&&['target','confirmed'].includes(c.basis)&&(base(c)===null||pef(base(c)))&&[c.confirmed,c.target].every(n=>n===null||pef(n))&&Number.isInteger(c.green)&&Number.isInteger(c.red)&&c.red>0&&c.red<c.green&&c.green<=100&&(c.age===null||Number.isInteger(c.age)&&c.age>=0&&c.age<=120)&&(c.height===null||Number.isFinite(c.height)&&c.height>0&&c.height<=250)&&validDate(c.from);
+  return validBaseline(c)&&(c.monitorDays===null||Number.isInteger(c.monitorDays)&&c.monitorDays>=1&&c.monitorDays<=365)&&['manual','table'].includes(c.targetMode)&&['','male','female'].includes(c.sex)&&(c.targetMode!=='table'||c.predicted.ok)&&['target','predicted','confirmed'].includes(c.basis)&&(c.basis!=='predicted'||c.predicted.ok)&&(base(c)===null||pef(base(c)))&&[c.confirmed,c.target].every(n=>n===null||pef(n))&&Number.isInteger(c.green)&&Number.isInteger(c.red)&&c.red>0&&c.red<c.green&&c.green<=100&&(c.age===null||Number.isInteger(c.age)&&c.age>=0&&c.age<=120)&&(c.height===null||Number.isFinite(c.height)&&c.height>0&&c.height<=250)&&validDate(c.from);
  }
  function previewSettings(){
   const c=readSettings();el('smart-config').hidden=!c.smartEnabled;previewBaseline();
@@ -440,7 +440,8 @@ function calculatePredicted({age,height,sex}){
   el('target-mode').value=c.targetMode||'manual';
   el('effective').value=today();el('smart-enabled').checked=c.smartEnabled;el('smart-name').value=c.smartName;el('smart-product').value=c.smartProduct;
   updateAge();
-  el('observed').textContent=`Лучший из всех записей: ${observed()} л/мин. Подтверждённое значение задаётся отдельно.`;
+  el('observed').textContent=`Лучший ПСВ в дневнике: ${observed()} л/мин.`;
+  el('legacy-basis').hidden=c.basis!=='confirmed';syncSmartPicker();loadReminders();
   el('settings-error').textContent='';previewSettings();
  }
  function renderMeds(){
@@ -470,7 +471,7 @@ function calculatePredicted({age,height,sex}){
  el('configure').addEventListener('click',()=>show('settings'));
  ['confirmed','target','basis','green','red','age','height','sex','target-mode','effective','smart-enabled'].forEach(id=>el(id).addEventListener('input',previewSettings));
  el('settings-save').addEventListener('click',()=>{
-  const c=readSettings();const name=el('patient-name').value.trim(),birth=el('birth').value;if(!name||birth&&(!validDate(birth)||ageAt(birth,today())>120||birth>c.from)){el('settings-error').textContent='Укажите имя или псевдоним и корректную дату рождения (не позже даты назначения).';return;}if(!validBaseline(c)){el('settings-error').textContent='Укажите название назначенного препарата базисной терапии или измените статус назначения.';return;}if(!validSettings(c)){el('settings-error').textContent=c.targetMode==='table'&&!c.predicted.ok?c.predicted.reason:'Проверьте длительность (1–365 дней или пусто), ПСВ (целое число 1–9999), возраст (0–120), рост (до 250 см), дату и границы зон: 0 < красная < зелёная ≤ 100%.';return;}
+  const c=readSettings();if(!['target','predicted'].includes(c.basis)){el('settings-error').textContent='Выберите новую основу зон: целевой ПСВ врача или должный ПСВ по таблице. До сохранения действуют прежние границы.';return;}if(c.smartEnabled&&!c.smartProduct){el('settings-error').textContent='Выберите назначенный препарат SMART и дозировку.';return;}const name=el('patient-name').value.trim(),birth=el('birth').value;if(!name||birth&&(!validDate(birth)||ageAt(birth,today())>120||birth>c.from)){el('settings-error').textContent='Укажите имя или псевдоним и корректную дату рождения (не позже даты назначения).';return;}if(!validBaseline(c)){el('settings-error').textContent='Укажите название назначенного препарата базисной терапии или измените статус назначения.';return;}if(!validSettings(c)){el('settings-error').textContent=(c.targetMode==='table'||c.basis==='predicted')&&!c.predicted.ok?c.predicted.reason:'Проверьте длительность (1–365 дней или пусто), ПСВ (целое число 1–9999), возраст (0–120), рост (до 250 см), дату и границы зон: 0 < красная < зелёная ≤ 100%.';return;}
   profiles[state.profile]={label:name.slice(0,80),birth};
   histories[state.profile]=[...histories[state.profile].filter(h=>h.from!==c.from),c].sort((a,b)=>a.from.localeCompare(b.from));
   el('status').textContent=`Настройки профиля применены с ${shortDate(c.from)}. Измерения до этой даты используют прежние границы.`;show('graph');
@@ -633,11 +634,60 @@ function calculatePredicted({age,height,sex}){
  for(const id of ['baseline-name','baseline-strength'])el(id).addEventListener('input',syncBaselinePicker);
  el('baseline-smart').addEventListener('click',syncBaselinePicker);
 
+ const smartCatalog={
+  budesonide:['Симбикорт Турбухалер — 80/4,5 мкг/доза','Симбикорт Турбухалер — 160/4,5 мкг/доза'],
+  beclometasone:['Фостер — 100/6 мкг/доза · аэрозоль']
+ };
+ function syncSmartPicker(){
+  const list=smartCatalog[el('smart-name').value]||[],current=el('smart-product').value;
+  el('smart-picker').replaceChildren(new Option('Выберите препарат из назначения',''));
+  list.forEach(label=>el('smart-picker').append(new Option(label,label)));
+  el('smart-picker').append(new Option('Другой назначенный вариант / ручной ввод','custom'));
+  el('smart-picker').value=list.includes(current)?current:current?'custom':'';
+  el('smart-custom').hidden=el('smart-picker').value!=='custom';
+ }
+ el('smart-picker').addEventListener('change',()=>{
+  const value=el('smart-picker').value;el('smart-custom').hidden=value!=='custom';
+  el('smart-product').value=value==='custom'?'':value;previewSettings();
+ });
+ el('smart-name').addEventListener('change',()=>{el('smart-product').value='';syncSmartPicker();previewSettings();});
+
+ // Calendar reminders contain no patient identifiers or measurements.
+ function defaultReminders(){return {adult:{am:'08:00',pm:'21:00',id:crypto.randomUUID()},child:{am:'08:00',pm:'21:00',id:crypto.randomUUID()}};}
+ let reminders=defaultReminders();
+ function validReminder(r){return r&&typeof r==='object'&&['am','pm'].every(k=>typeof r[k]==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[k]))&&r.am!==r.pm&&typeof r.id==='string'&&/^[a-zA-Z0-9-]{1,80}$/.test(r.id);}
+ function loadReminders(){const r=reminders[state.profile];el('reminder-am').value=r.am;el('reminder-pm').value=r.pm;el('reminder-status').textContent='';}
+ function readReminders(){return {...reminders[state.profile],am:el('reminder-am').value,pm:el('reminder-pm').value};}
+ function calendarText(value){return String(value).replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');}
+ function foldCalendarLine(line){let result='',part='',bytes=0;for(const ch of line){const size=new TextEncoder().encode(ch).length;if(bytes+size>75){result+=part+'\r\n';part=' ';bytes=1;}part+=ch;bytes+=size;}return result+part;}
+ function reminderCalendar(r,now=new Date()){
+  if(!validReminder(r)||!Number.isFinite(now.getTime()))throw new Error('Укажите два разных времени в формате ЧЧ:ММ.');
+  const stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Dyshu//Calendar reminders//RU','CALSCALE:GREGORIAN'];
+  for(const slot of ['am','pm']){
+   const [hour,minute]=r[slot].split(':').map(Number),date=new Date(now);date.setHours(hour,minute,0,0);if(date<=now)date.setDate(date.getDate()+1);
+   const pad=n=>String(n).padStart(2,'0');
+   const start=`${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}T${pad(hour)}${pad(minute)}00`;
+   const title=slot==='am'?'Дышу — утреннее измерение':'Дышу — вечернее измерение';
+   lines.push('BEGIN:VEVENT',`UID:${r.id}-${slot}@dyshu-diary`,`DTSTAMP:${stamp}`,`DTSTART:${start}`,'DURATION:PT5M','RRULE:FREQ=DAILY','TRANSP:TRANSPARENT',`SUMMARY:${calendarText(title)}`,`DESCRIPTION:${calendarText('Измерьте ПСВ по назначению врача и внесите результат в дневник.\nhttps://maksimkorsunov259-lab.github.io/dyshu-diary/')}`,'URL:https://maksimkorsunov259-lab.github.io/dyshu-diary/','BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:PT0M',`DESCRIPTION:${calendarText(title)}`,'END:VALARM','END:VEVENT');
+  }
+  return [...lines,'END:VCALENDAR'].map(foldCalendarLine).join('\r\n')+'\r\n';
+ }
+ el('reminder-save').addEventListener('click',async()=>{
+  const r=readReminders();if(!validReminder(r)){el('reminder-status').textContent='Укажите два разных времени: утро и вечер.';return;}
+  if(!storageReady){el('reminder-status').textContent='Хранилище недоступно. Время не сохранено.';return;}
+  reminders[state.profile]=r;await persist();
+  el('reminder-status').textContent=failedWrite?'Время не удалось сохранить. Проверьте сообщение об ошибке.':'Время сохранено. Для оповещений добавьте события в календарь. Уже добавленные события измените в самом календаре.';
+ });
+ el('reminder-export').addEventListener('click',()=>{
+  try{const contents=reminderCalendar(readReminders()),url=URL.createObjectURL(new Blob([contents],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='dyshu-reminders.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);el('reminder-status').textContent='Файл подготовлен. Добавьте обе серии в календарь и проверьте оповещения. Скачивание само по себе не включает напоминания.';}catch(e){el('reminder-status').textContent=e.message;}
+ });
+
  // Device-local persistence, versioned backups, date navigation and printing.
  let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
  const saveStatus=el('storage-status');
- function snapshot(){return structuredClone({format:'dyshu-diary',version:1,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed});}
- function applySnapshot(s){for(const key of ['adult','child']){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));}
+ function snapshot(){return structuredClone({format:'dyshu-diary',version:2,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
+ function applySnapshot(s){reminders=s.reminders||defaultReminders();for(const key of ['adult','child']){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));}
  function persist(){
   if(!storageReady)return;
   const data=snapshot();pendingWrites++;unsaved=true;saveStatus.textContent='Сохраняем на устройстве…';saveStatus.dataset.error='false';
@@ -645,12 +695,14 @@ function calculatePredicted({age,height,sex}){
   return saveQueue;
  }
  function validateSnapshot(s){
-  const fail=()=>{throw new Error('Файл не соответствует формату дневника версии 1. Данные не изменены.');};
+  const fail=()=>{throw new Error('Файл не соответствует формату дневника (версии 1–2). Данные не изменены.');};
   const obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
   const str=(v,n)=>typeof v==='string'&&v.length<=n;
   const list=v=>Array.isArray(v)&&v.length<=100000;
   const date=d=>validDate(d);
-  if(!obj(s)||s.format!=='dyshu-diary'||s.version!==1||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
+  if(!obj(s)||s.format!=='dyshu-diary'||![1,2].includes(s.version)||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
+  if(s.reminders!==undefined&&(!obj(s.reminders)||!['adult','child'].every(k=>validReminder(s.reminders[k]))))fail();
+  if(s.version===2&&s.reminders===undefined)fail();
   const meds=rows=>list(rows)&&rows.every(m=>obj(m)&&['salbutamol','berodual','smart'].includes(m.key)&&str(m.name,150)&&str(m.product||'',120)&&str(m.amount,80)&&str(m.time,5)&&(!m.time||/^([01]\d|2[0-3]):[0-5]\d$/.test(m.time))&&['rescue','maintenance'].includes(m.purpose));
   const common=r=>obj(r)&&date(r.date)&&Object.hasOwn(symptoms,r.symptom)&&[null,true,false].includes(r.night)&&Object.hasOwn(relievers,r.reliever)&&str(r.note,160)&&meds(r.meds||[]);
   for(const key of ['adult','child']){
@@ -673,6 +725,7 @@ function calculatePredicted({age,height,sex}){
     aids.add(a.id);
    }
   }
+  s.reminders=s.reminders||defaultReminders();s.version=2;
   return s;
  }
  function downloadJSON(data,prefix){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=prefix+'-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
