@@ -656,20 +656,43 @@ function calculatePredicted({age,height,sex}){
  function defaultReminders(){return {adult:{am:'08:00',pm:'21:00',id:crypto.randomUUID()},child:{am:'08:00',pm:'21:00',id:crypto.randomUUID()}};}
  let reminders=defaultReminders();
  function validReminder(r){return r&&typeof r==='object'&&['am','pm'].every(k=>typeof r[k]==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[k]))&&r.am!==r.pm&&typeof r.id==='string'&&/^[a-zA-Z0-9-]{1,80}$/.test(r.id);}
- function loadReminders(){const r=reminders[state.profile];el('reminder-am').value=r.am;el('reminder-pm').value=r.pm;el('reminder-status').textContent='';}
+ let reminderPlanSignature='';
+ const reminderFormSignature=()=>JSON.stringify([el('monitor-days').value,el('effective').value]);
+ function loadReminders(){const r=reminders[state.profile];el('reminder-am').value=r.am;el('reminder-pm').value=r.pm;el('reminder-status').textContent='';reminderPlanSignature=reminderFormSignature();updateReminderPeriod();}
+ function savedReminderPlan(){if(reminderPlanSignature!==reminderFormSignature())throw new Error('Вы изменили срок или дату назначения. Сначала нажмите «Сохранить профиль и назначения», затем скачайте файл календаря.');return config(today());}
+ function updateReminderPeriod(){try{const p=monitoringPeriod(savedReminderPlan());el('reminder-period').textContent=`По сохранённому назначению: ${p.days} дн., с ${shortDate(p.from)} по ${shortDate(p.until)} включительно. В файл попадут только предстоящие напоминания этого периода.`;}catch(e){el('reminder-period').textContent=e.message;}}
  function readReminders(){return {...reminders[state.profile],am:el('reminder-am').value,pm:el('reminder-pm').value};}
  function calendarText(value){return String(value).replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');}
  function foldCalendarLine(line){let result='',part='',bytes=0;for(const ch of line){const size=new TextEncoder().encode(ch).length;if(bytes+size>75){result+=part+'\r\n';part=' ';bytes=1;}part+=ch;bytes+=size;}return result+part;}
- function reminderCalendar(r,now=new Date()){
+ function monitoringPeriod(plan){
+  if(!Number.isInteger(plan?.monitorDays)||plan.monitorDays<1||plan.monitorDays>365)throw new Error('Укажите назначенную длительность наблюдения от 1 до 365 дней и сохраните профиль. Без срока напоминания не создаются.');
+  const from=plan.from;
+  if(typeof from!=='string'||!/^\d{4}-\d\d-\d\d$/.test(from))throw new Error('Сохраните корректную дату начала назначения.');
+  const first=Date.parse(from+'T00:00:00Z');
+  if(!Number.isFinite(first)||new Date(first).toISOString().slice(0,10)!==from)throw new Error('Сохраните корректную дату начала назначения.');
+  const last=first+(plan.monitorDays-1)*86400000;
+  return {from,until:new Date(last).toISOString().slice(0,10),days:plan.monitorDays,first,last};
+ }
+ function reminderSchedule(r,plan,now=new Date()){
   if(!validReminder(r)||!Number.isFinite(now.getTime()))throw new Error('Укажите два разных времени в формате ЧЧ:ММ.');
+  const period=monitoringPeriod(plan),todayNumber=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),events=[];
+  for(const slot of ['am','pm']){
+   const [hour,minute]=r[slot].split(':').map(Number);let day=Math.max(todayNumber,period.first);
+   const d=new Date(day),candidate=new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),hour,minute,0,0);
+   if(candidate<=now)day+=86400000;
+   if(day>period.last)continue;
+   events.push({slot,start:new Date(day).toISOString().slice(0,10).replace(/-/g,'')+'T'+r[slot].replace(':','')+'00',count:Math.floor((period.last-day)/86400000)+1});
+  }
+  if(!events.length)throw new Error('В назначенном периоде больше нет предстоящих напоминаний. При продлении наблюдения согласуйте и сохраните новое назначение.');
+  return {period,events};
+ }
+ function reminderCalendar(r,plan,now=new Date()){
+  const {events}=reminderSchedule(r,plan,now);
   const stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
   const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Dyshu//Calendar reminders//RU','CALSCALE:GREGORIAN'];
-  for(const slot of ['am','pm']){
-   const [hour,minute]=r[slot].split(':').map(Number),date=new Date(now);date.setHours(hour,minute,0,0);if(date<=now)date.setDate(date.getDate()+1);
-   const pad=n=>String(n).padStart(2,'0');
-   const start=`${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}T${pad(hour)}${pad(minute)}00`;
+  for(const {slot,start,count} of events){
    const title=slot==='am'?'Дышу — утреннее измерение':'Дышу — вечернее измерение';
-   lines.push('BEGIN:VEVENT',`UID:${r.id}-${slot}@dyshu-diary`,`DTSTAMP:${stamp}`,`DTSTART:${start}`,'DURATION:PT5M','RRULE:FREQ=DAILY','TRANSP:TRANSPARENT',`SUMMARY:${calendarText(title)}`,`DESCRIPTION:${calendarText('Измерьте ПСВ по назначению врача и внесите результат в дневник.\nhttps://maksimkorsunov259-lab.github.io/dyshu-diary/')}`,'URL:https://maksimkorsunov259-lab.github.io/dyshu-diary/','BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:PT0M',`DESCRIPTION:${calendarText(title)}`,'END:VALARM','END:VEVENT');
+   lines.push('BEGIN:VEVENT',`UID:${r.id}-${slot}@dyshu-diary`,`DTSTAMP:${stamp}`,`DTSTART:${start}`,'DURATION:PT5M',`RRULE:FREQ=DAILY;COUNT=${count}`,'TRANSP:TRANSPARENT',`SUMMARY:${calendarText(title)}`,`DESCRIPTION:${calendarText('Измерьте ПСВ по назначению врача и внесите результат в дневник.\nhttps://maksimkorsunov259-lab.github.io/dyshu-diary/')}`,'URL:https://maksimkorsunov259-lab.github.io/dyshu-diary/','BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:PT0M',`DESCRIPTION:${calendarText(title)}`,'END:VALARM','END:VEVENT');
   }
   return [...lines,'END:VCALENDAR'].map(foldCalendarLine).join('\r\n')+'\r\n';
  }
@@ -680,8 +703,9 @@ function calculatePredicted({age,height,sex}){
   el('reminder-status').textContent=failedWrite?'Время не удалось сохранить. Проверьте сообщение об ошибке.':'Время сохранено. Для оповещений добавьте события в календарь. Уже добавленные события измените в самом календаре.';
  });
  el('reminder-export').addEventListener('click',()=>{
-  try{const contents=reminderCalendar(readReminders()),url=URL.createObjectURL(new Blob([contents],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='dyshu-reminders.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);el('reminder-status').textContent='Файл подготовлен. Добавьте обе серии в календарь и проверьте оповещения. Скачивание само по себе не включает напоминания.';}catch(e){el('reminder-status').textContent=e.message;}
+  try{if(!storageReady||unsaved||failedWrite)throw new Error('Дождитесь сохранения назначения. Если есть ошибка записи, устраните её перед скачиванием календаря.');const plan=savedReminderPlan(),contents=reminderCalendar(readReminders(),plan),period=monitoringPeriod(plan),url=URL.createObjectURL(new Blob([contents],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='dyshu-reminders.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);el('reminder-status').textContent=`Файл подготовлен: напоминания по ${shortDate(period.until)} включительно. Удалите прежние серии, если они уже добавлены, затем импортируйте новые и проверьте оповещения. Скачивание само по себе не включает напоминания.`;}catch(e){el('reminder-status').textContent=e.message;}
  });
+ for(const id of ['monitor-days','effective'])el(id).addEventListener('input',updateReminderPeriod);
 
  // Device-local persistence, versioned backups, date navigation and printing.
  let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
