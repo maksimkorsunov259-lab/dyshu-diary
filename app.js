@@ -686,6 +686,8 @@ function calculatePredicted({age,height,sex}){
  // Device-local persistence, versioned backups, date navigation and printing.
  let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
  const saveStatus=el('storage-status');
+ // The updater waits for writes and never reloads after a failed save.
+ window.DyshuUpdate={prepare:async()=>{await saveQueue;return storageReady&&!failedWrite&&pendingWrites===0&&!unsaved;}};
  function snapshot(){return structuredClone({format:'dyshu-diary',version:2,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
  function applySnapshot(s){reminders=s.reminders||defaultReminders();for(const key of ['adult','child']){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));}
  function persist(){

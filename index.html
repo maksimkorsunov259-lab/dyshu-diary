@@ -5,7 +5,7 @@
     <div class="pf-brand"><div class="pf-brand-title"><img class="pf-brand-icon" src="./icon-blue-192.png" width="56" height="56" alt=""><strong>Дышу</strong></div></div>
     <select disabled id="pf-profile" aria-label="Выбрать дневник"><option value="adult">Мой дневник</option><option value="child">Дневник ребёнка</option></select>
    </header>
-   <div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><main class="pf-content" inert>
+   <aside id="pf-update-banner" class="pf-update-banner" hidden aria-label="Обновление приложения"><div><strong>Доступна новая версия «Дышу»</strong><p id="pf-update-message" role="status">Сохранённый дневник останется на устройстве.</p></div><button type="button" id="pf-update-now" class="pf-primary">Обновить приложение</button></aside><div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><main class="pf-content" inert>
     <section id="pf-graph-panel">
      <h2>Дыхание в динамике</h2><p class="pf-sub" id="pf-period"></p>
      <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
