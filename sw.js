@@ -1,5 +1,5 @@
 'use strict';
-const CACHE="dyshu-dyshu-diary-c1e9bb8581e7",ASSETS=["./index.html","./app.css","./app.js","./storage.js","./install.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./qr.html","./qr.png","./author-qr.png","./author-photo.png","./icon-blue-192.png","./icon-blue-512.png","./apple-touch-icon-blue.png","./icon-blue-maskable-512.png"];
+const CACHE="dyshu-dyshu-diary-58c20f9e6b11",ASSETS=["./index.html","./app.css","./app.js","./storage.js","./install.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./qr.html","./qr.png","./author-qr.png","./author-photo.png","./icon-blue-192.png","./icon-blue-512.png","./apple-touch-icon-blue.png","./icon-blue-maskable-512.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})))));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('dyshu-dyshu-diary-')&&k!==CACHE).map(k=>caches.delete(k)))));});
 self.addEventListener('message',e=>{if(e.data==='activate')self.skipWaiting();});

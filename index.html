@@ -13,11 +13,7 @@
      <div class="pf-box"><h3>События выбранного дня</h3><div class="pf-daynav"><button type="button" id="pf-prev-day" aria-label="Предыдущий день">←</button><input type="date" id="pf-timeline-date" aria-label="Дата на временной шкале" min="1900-01-01"><button type="button" id="pf-next-day" aria-label="Следующий день">→</button></div><div id="pf-timeline" aria-live="polite"></div><button type="button" id="pf-add-event" class="pf-primary pf-wide">Симптомы / ингалятор</button></div>
      <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button></div>
      <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-reference-summary"></div><div id="pf-zone-legend" class="pf-zones"></div><button type="button" id="pf-configure" class="pf-wide">Настройки врача</button></div>
-<section class="pf-box pf-author" aria-label="Автор-создатель приложения">
-   <div class="pf-author-head"><img class="pf-author-photo" src="./author-photo.png" width="82" height="106" alt="Коршунов Максим Александрович — автор-создатель приложения"><div><p class="pf-author-eyebrow">Автор-создатель приложения</p><h3>Коршунов Максим Александрович</h3><p class="pf-author-note">Аллерголог-иммунолог, педиатр</p></div></div>
-   <div class="pf-author-qr"><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink Коршунова Максима Александровича"><img src="./author-qr.png" width="112" height="112" alt="QR-код на Taplink врача"></a><div><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Страница врача · Taplink</a><p class="pf-author-small">Наведите камеру на QR-код или откройте ссылку.</p></div></div>
-   <div class="pf-support"><h3>Поддержать развитие проекта</h3><p class="pf-author-note">Добровольный вклад в создание новых цифровых инструментов для пациентов.</p><p class="pf-author-small">Если хотите поблагодарить автора, откройте его страницу на ПроДокторов и нажмите «Поблагодарить». Приложение остаётся бесплатным для всех.</p><a href="https://prodoctorov.ru/moskva/vrach/1203299-korshunov/" target="_blank" rel="noopener noreferrer" class="pf-support-link">Поддержать через ПроДокторов ↗</a></div>
-  </section>
+
     </section>
         <section id="pf-guide-panel" hidden aria-labelledby="pf-guide-title">
      <button type="button" id="pf-guide-back">← Вернуться к записи</button>
@@ -175,21 +171,27 @@
      <p id="pf-control-error" class="pf-error" role="alert"></p><button type="button" id="pf-control-save" class="pf-primary pf-wide">Сохранить результат в отчёт</button><button type="button" id="pf-control-back" class="pf-wide">Вернуться к отчёту</button>
     </section>
     <p id="pf-status" class="pf-sub" role="status" aria-live="polite"></p>
-   </main>
-      <dialog id="pf-about" aria-labelledby="pf-about-title">
-    <button type="button" id="pf-about-close" autofocus>← Вернуться в дневник</button>
-    <h2 id="pf-about-title">О приложении</h2>
-    <p>«Дышу» — дневник домашней пикфлоуметрии для взрослых и детей с бронхиальной астмой. Он помогает записывать измерения ПСВ, симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>
     <section class="pf-box pf-author" aria-label="Автор-создатель приложения">
    <div class="pf-author-head"><img class="pf-author-photo" src="./author-photo.png" width="82" height="106" alt="Коршунов Максим Александрович — автор-создатель приложения"><div><p class="pf-author-eyebrow">Автор-создатель приложения</p><h3>Коршунов Максим Александрович</h3><p class="pf-author-note">Аллерголог-иммунолог, педиатр</p></div></div>
    <div class="pf-author-qr"><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink Коршунова Максима Александровича"><img src="./author-qr.png" width="112" height="112" alt="QR-код на Taplink врача"></a><div><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Страница врача · Taplink</a><p class="pf-author-small">Наведите камеру на QR-код или откройте ссылку.</p></div></div>
    <div class="pf-support"><h3>Поддержать развитие проекта</h3><p class="pf-author-note">Добровольный вклад в создание новых цифровых инструментов для пациентов.</p><p class="pf-author-small">Если хотите поблагодарить автора, откройте его страницу на ПроДокторов и нажмите «Поблагодарить». Приложение остаётся бесплатным для всех.</p><a href="https://prodoctorov.ru/moskva/vrach/1203299-korshunov/" target="_blank" rel="noopener noreferrer" class="pf-support-link">Поддержать через ПроДокторов ↗</a></div>
   </section>
+   </main>
+      <dialog id="pf-about" aria-labelledby="pf-about-title">
+    <button type="button" id="pf-about-close" autofocus>← Вернуться в дневник</button>
+    <h2 id="pf-about-title">О приложении</h2>
+    <p>«Дышу» — дневник домашней пикфлоуметрии для взрослых и детей с бронхиальной астмой. Он помогает записывать измерения ПСВ, симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>
+
 
     <h3>Ваш дневник — на вашем устройстве</h3><p>Приложение работает без регистрации. Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>
     <p class="pf-sub">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>
     <h3>Авторские права</h3>
     <p class="pf-sub">Уведомление относится к материалам приложения, права на которые принадлежат Коршунову Максиму Александровичу. Их копирование и распространение допускаются с разрешения правообладателя, кроме случаев, предусмотренных законом. Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.</p>
+    <section class="pf-box pf-author" aria-label="Автор-создатель приложения">
+   <div class="pf-author-head"><img class="pf-author-photo" src="./author-photo.png" width="82" height="106" alt="Коршунов Максим Александрович — автор-создатель приложения"><div><p class="pf-author-eyebrow">Автор-создатель приложения</p><h3>Коршунов Максим Александрович</h3><p class="pf-author-note">Аллерголог-иммунолог, педиатр</p></div></div>
+   <div class="pf-author-qr"><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer" aria-label="Открыть Taplink Коршунова Максима Александровича"><img src="./author-qr.png" width="112" height="112" alt="QR-код на Taplink врача"></a><div><a href="https://taplink.cc/dr.korshunovmax" target="_blank" rel="noopener noreferrer">Страница врача · Taplink</a><p class="pf-author-small">Наведите камеру на QR-код или откройте ссылку.</p></div></div>
+   <div class="pf-support"><h3>Поддержать развитие проекта</h3><p class="pf-author-note">Добровольный вклад в создание новых цифровых инструментов для пациентов.</p><p class="pf-author-small">Если хотите поблагодарить автора, откройте его страницу на ПроДокторов и нажмите «Поблагодарить». Приложение остаётся бесплатным для всех.</p><a href="https://prodoctorov.ru/moskva/vrach/1203299-korshunov/" target="_blank" rel="noopener noreferrer" class="pf-support-link">Поддержать через ПроДокторов ↗</a></div>
+  </section>
    </dialog>
 <div class="pf-footer"><button type="button" data-open-about>О приложении</button><p>© 2026 Коршунов Максим Александрович. Все права защищены.</p><p>Дневник не заменяет назначение и консультацию врача.</p></div>
    <nav inert class="pf-tabs" aria-label="Разделы дневника"><button type="button" data-screen="graph" aria-pressed="true"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>Динамика</button><button type="button" data-screen="entry" aria-pressed="false"><i data-lucide="circle-plus" aria-hidden="true"></i>Записать</button><button type="button" data-screen="report" aria-pressed="false"><i data-lucide="file-text" aria-hidden="true"></i>Отчёт</button><button type="button" data-screen="settings" aria-pressed="false"><i data-lucide="sliders-horizontal" aria-hidden="true"></i>Профиль</button></nav>
