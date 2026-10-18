@@ -2,6 +2,7 @@
 (async () => {
  const root=document.getElementById('pf-demo');
  const el=id=>root.querySelector('#pf-'+id);
+ const {validSymptoms,validKinds,primarySymptom,symptomValues,kindValues,inhalationLabel,doseChoice,publicReference}=window.DyshuEntryOptions;
  // CONTROL_SCORE_START
 // Numerical scoring engine. Wording and translation metadata live in questionnaire-content.cjs.
 const controlScales={
@@ -140,7 +141,7 @@ function calculatePredicted({age,height,sex}){
   const [lo,hi]=b,low=pefTables.child[lo],high=pefTables.child[hi];
   raw=pefLerp(height,low[0],high[0],low[1],high[1]);
   anchors=[low,...(lo===hi?[]:[high])].map(([h,v])=>({height:h,value:v}));
-  table='Дети младше 15 лет · изображение 1, таблица 1';
+  table='Таблица для детей младше 15 лет';
   interpolated=lo!==hi;
  }else{
   if(age>60)return fail('Таблицы для возраста от 15 лет охватывают 15–60 лет. Задайте ориентир врача вручную.');
@@ -151,7 +152,7 @@ function calculatePredicted({age,height,sex}){
   const atHeight=h=>pefLerp(age,pefTables.ages[a0],pefTables.ages[a1],matrix[h][a0],matrix[h][a1]);
   raw=pefLerp(height,pefTables.heights[h0],pefTables.heights[h1],atHeight(h0),atHeight(h1));
   anchors=[...new Set([h0,h1])].flatMap(h=>[...new Set([a0,a1])].map(a=>({height:pefTables.heights[h],age:pefTables.ages[a],value:matrix[h][a]})));
-  table=sex==='male'?'Мужчины · изображение 3':'Женщины · изображение 2';
+  table=sex==='male'?'Таблица для мужчин':'Таблица для женщин';
   interpolated=h0!==h1||a0!==a1;
  }
  return {ok:true,value:Math.round(raw),raw,age,height,sex:age<15?null:sex,table,interpolated,anchors,version:pefTables.version};
@@ -173,22 +174,25 @@ function calculatePredicted({age,height,sex}){
  function events(){return eventsByProfile[state.profile];}
  function inPeriod(r){return r.date>=day(state.days-1)&&r.date<=ending;}
  function sources(){return [...selected().map(r=>({...r,source:'pef',sourceId:r.date+'-'+r.slot})),...events().filter(inPeriod).map(r=>({...r,source:'event',sourceId:r.id}))];}
- function hasSymptoms(r){return !!r.symptom&&!['none','unknown'].includes(r.symptom);}
+ function hasSymptoms(r){return symptomValues(r).some(v=>!['none','unknown'].includes(v));}
+ const symptomText=r=>symptomValues(r).map(v=>symptoms[v]).join(' · ');
+ const checkedValues=id=>[...el(id).querySelectorAll('input:checked')].map(input=>input.value);
+ function setChoices(id,values){el(id).querySelectorAll('input').forEach(input=>input.checked=values.includes(input.value));}
  function administrations(){return sources().flatMap(r=>(r.meds||[]).map(m=>({...m,date:r.date,time:m.time||r.time||'',source:r.source,sourceId:r.sourceId})));}
  function timelineItems(){
   const list=[];
   for(const r of sources()){
    const item=(type,label,detail='',time=r.time||'')=>list.push({date:r.date,time,type,label,detail,source:r.source,sourceId:r.sourceId,slot:r.slot});
    if(r.source==='pef')item('pef',`${r.slot==='am'?'Утро':'Вечер'} · ПСВ ${r.pef} л/мин`,`${contexts[r.context]}${r.note?' · '+r.note:''}`);
-   if(hasSymptoms(r))item('symptom',symptoms[r.symptom]);
+   if(hasSymptoms(r))item('symptom',symptomText(r));
    else if(r.symptom==='none'&&r.source==='event')item('assessment','Жалоб нет — отметка пациента');
    if(r.night===true)item('night','Ночное пробуждение',`В ночь на ${shortDate(r.date)}`);
    for(const m of r.meds||[])item('medicine',m.name,`${m.purpose==='maintenance'?'Плановый приём':'Для облегчения симптомов'} · ${m.amount||'количество не указано'}${m.product?' · '+m.product:''}`,m.time||r.time||'');
-   if(r.source==='event'&&r.kind==='infection')item('infection','ОРВИ / инфекция — отметка пациента',r.note);
-   else if(r.source==='event'&&r.kind==='therapy')item('therapy','Изменение назначенной терапии',r.note);
-   else if(r.source==='event'&&r.note)item('note','Заметка',r.note);
+   if(r.source==='event'&&kindValues(r).includes('infection'))item('infection','ОРВИ / инфекция — отметка пациента',r.note);
+   if(r.source==='event'&&kindValues(r).includes('therapy'))item('therapy','Изменение назначенной терапии',r.note);
+   if(r.source==='event'&&r.note&&(kindValues(r).includes('note')||!kindValues(r).some(k=>['infection','therapy'].includes(k))))item('note','Заметка',r.note);
    if(r.reliever==='yes'&&!(r.meds||[]).some(m=>m.purpose==='rescue'))item('unspecified','Препарат для облегчения использован','Название и число применений не указаны');
-   if(r.source==='event'&&r.symptom==='unknown'&&!r.night&&!r.note&&!r.meds.length&&r.kind==='symptoms'&&r.reliever!=='yes')item('assessment',r.night===false?'Ночных пробуждений не отмечено':'Препарат для облегчения не использовал');
+   if(r.source==='event'&&r.symptom==='unknown'&&!r.night&&!r.note&&!r.meds.length&&kindValues(r).length===1&&kindValues(r)[0]==='symptoms'&&r.reliever!=='yes')item('assessment',r.night===false?'Ночных пробуждений не отмечено':'Препарат для облегчения не использовал');
   }
   return list.sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'99:'+a.slot).localeCompare(b.time||'99:'+b.slot));
  }
@@ -202,7 +206,7 @@ function calculatePredicted({age,height,sex}){
  function renderPrediction(container,p){
   container.replaceChildren(text('p',predictedText(p)));
   if(!p?.ok){container.append(text('p',p?.reason||'Укажите возраст, рост и таблицу по полу.','pf-sub'));return;}
-  container.append(text('p',`${p.table}. Возраст: ${number(p.age)}; рост: ${number(p.height)} см.`,'pf-sub'));
+  container.append(text('p',`${publicReference(p.table)}. Возраст: ${number(p.age)}; рост: ${number(p.height)} см.`,'pf-sub'));
   const details=document.createElement('details');details.append(text('summary','Как получено значение'));
   details.append(text('p',p.interpolated?`Линейная интерполяция ${p.sex?'по возрасту и росту':'по росту'}: ${number(p.raw)} → ${p.value} л/мин. Округление до целого.`:'Точное совпадение с ячейкой таблицы.','pf-sub'));
   details.append(text('p',p.anchors.map(a=>`${a.height} см${a.age!==undefined?', '+a.age+' лет':''}: ${a.value} л/мин`).join('; '),'pf-sub'));
@@ -274,7 +278,7 @@ function calculatePredicted({age,height,sex}){
   for(const r of [...data].reverse()){
    const item=text('div','','pf-record');
    if(r.attempts)item.append(text('p','Попытки: '+r.attempts.join(' / ')+' л/мин'+(attemptSpread(r.attempts)>40?' · Разница двух лучших >40 л/мин':''),'pf-sub'));
-   item.append(text('strong',`${shortDate(r.date)} · ${r.slot==='am'?'утро':'вечер'} · ${r.pef} л/мин`),text('p',symptoms[r.symptom]+(r.night?' · Ночное пробуждение':''),'pf-sub'),text('p',`${contexts[r.context]} · ${relievers[r.reliever]}`,'pf-sub'));
+   item.append(text('strong',`${shortDate(r.date)} · ${r.slot==='am'?'утро':'вечер'} · ${r.pef} л/мин`),text('p',symptomText(r)+(r.night?' · Ночное пробуждение':''),'pf-sub'),text('p',`${contexts[r.context]} · ${relievers[r.reliever]}`,'pf-sub'));
    for(const m of r.meds||[])item.append(text('p',`${m.name}${m.product?' · '+m.product:''} · ${m.purpose==='maintenance'?'плановый приём':'для облегчения симптомов'} · ${m.amount||'количество не указано'} · ${m.time||'время не указано'}`,'pf-sub'));
    if(r.note)item.append(text('p',r.note,'pf-sub'));el('records').append(item);
   }
@@ -327,7 +331,7 @@ function calculatePredicted({age,height,sex}){
   const qualityRows=data.filter(r=>Array.isArray(r.attempts)&&attemptSpread(r.attempts)>40);
   if(qualityRows.length)summary.append(text('p','Расхождение двух лучших попыток >40 л/мин: '+qualityRows.map(r=>shortDate(r.date)+' '+(r.slot==='am'?'утро':'вечер')+' ('+attemptSpread(r.attempts)+' л/мин)').join('; ')+'. Проверьте технику вместе с врачом.','pf-sub'));
   const method=el('report-method');method.replaceChildren(text('p','Полнота ПСВ рассчитана для расписания: утром и вечером каждый день. Повторные отметки симптомов и ночных пробуждений в одну дату учитываются как один день / одна ночь.','pf-sub'));
-  for(const h of histories[state.profile].filter((h,i,a)=>h.from<=ending&&(!a[i+1]||a[i+1].from>day(state.days-1))))method.append(text('p',`Настройки с ${shortDate(h.from)}: 100% = ${base(h)} л/мин (${basisLabel(h)}); зелёная ≥${h.green}%, красная <${h.red}%. Возраст ${h.age??'—'}, рост ${h.height??'—'} см. ${h.source}. ${predictedText(h.predicted)}${h.predicted?.ok?' · '+h.predicted.table:''}`,'pf-sub'));
+  for(const h of histories[state.profile].filter((h,i,a)=>h.from<=ending&&(!a[i+1]||a[i+1].from>day(state.days-1))))method.append(text('p',`Настройки с ${shortDate(h.from)}: 100% = ${base(h)} л/мин (${basisLabel(h)}); зелёная ≥${h.green}%, красная <${h.red}%. Возраст ${h.age??'—'}, рост ${h.height??'—'} см. ${publicReference(h.source)}. ${predictedText(h.predicted)}${h.predicted?.ok?' · '+publicReference(h.predicted.table):''}`,'pf-sub'));
   method.append(text('p','Вариабельность ПСВ пока не рассчитывается: отдельный показатель добавим после согласования протокола сопоставимых измерений.','pf-sub'));
  }
  function openGuide(button){
@@ -354,14 +358,14 @@ function calculatePredicted({age,height,sex}){
   el('add-attempt').textContent='Добавить попытку '+(attemptCount+1);
   el('remove-attempt').hidden=attemptCount<=3||el('a'+attemptCount).value!=='';
  }
- el('add-attempt').addEventListener('click',()=>{if(attemptCount>=5||!validValues(values())||attemptSpread(values())<=40||el('symptom').value==='severe')return;attemptCount++;el('a'+attemptCount+'-label').hidden=false;el('a'+attemptCount).value='';feedback();el('a'+attemptCount).focus();});
+ el('add-attempt').addEventListener('click',()=>{if(attemptCount>=5||!validValues(values())||attemptSpread(values())<=40||checkedValues('symptom').includes('severe'))return;attemptCount++;el('a'+attemptCount+'-label').hidden=false;el('a'+attemptCount).value='';feedback();el('a'+attemptCount).focus();});
  el('remove-attempt').addEventListener('click',()=>{if(attemptCount<=3||el('a'+attemptCount).value!=='')return;el('a'+attemptCount+'-label').hidden=true;attemptCount--;feedback();});
  function values(){return Array.from({length:attemptCount},(_,i)=>el('a'+(i+1)).value.trim()).map(v=>/^\d+$/.test(v)?Number(v):NaN);}
  function validValues(v){return v.length>=3&&v.length<=5&&v.every(n=>Number.isInteger(n)&&n>0&&n<10000);}
  function feedback(){
   const v=values(),valid=entryMode==='pef'&&validValues(v),best=valid?Math.max(...v):null;
   el('best').textContent=valid?String(best):'—';
-  const severe=el('symptom').value==='severe';renderAttemptQuality(v,valid,severe);el('feedback').hidden=!valid&&!severe;
+  const severe=checkedValues('symptom').includes('severe');renderAttemptQuality(v,valid,severe);el('feedback').hidden=!valid&&!severe;
   const c=config(el('date').value||ending);
   el('feedback').dataset.zone=severe?'red':valid?zone(best,c):'green';
   el('feedback').textContent=severe?'При выраженной одышке и затруднении речи нужна экстренная медицинская помощь, независимо от цифры ПСВ.':valid&&!base(c)?zoneText(best,c):valid?`${number(best/base(c)*100)}% от ${basisLabel(c)} (${base(c)} л/мин). ${zoneText(best,c)}`:'';
@@ -378,8 +382,8 @@ function calculatePredicted({age,height,sex}){
   [1,2,3,4,5].forEach(i=>el('a'+i).value=r?.attempts?.[i-1]??'');
   el('a4-label').hidden=attemptCount<4;el('a5-label').hidden=attemptCount<5;
   el('guide-invitation').hidden=guideDismissed[state.profile];
-  el('symptom').value=r?.symptom||'unknown';el('night').value=r?.night===true?'yes':r?.night===false?'no':'unknown';el('context').value=r?.context||'unknown';el('reliever').value=r?.reliever||'unknown';el('note').value=r?.note||'';
-  el('event-time').value=r?.time||'12:00';el('event-kind').value=r?.kind||'symptoms';
+  setChoices('symptom',r?symptomValues(r):['unknown']);el('night').value=r?.night===true?'yes':r?.night===false?'no':'unknown';el('context').value=r?.context||'unknown';el('reliever').value=r?.reliever||'unknown';el('note').value=r?.note||'';
+  el('event-time').value=r?.time||'12:00';setChoices('event-kind',r?kindValues(r):['symptoms']);
   draftMeds=Object.fromEntries((r?.meds||[]).map(m=>[m.key,{...m}]));renderMeds();
   el('save').textContent=r?'Сохранить изменения в дневнике':isEvent?'Сохранить событие без ПСВ':'Сохранить в дневник';el('error').textContent='';feedback();
  }
@@ -458,7 +462,26 @@ function calculatePredicted({age,height,sex}){
     for(const [v,t]of [['rescue','Для облегчения симптомов'],['maintenance','Плановый приём']]){const option=text('option',t);option.value=v;select.append(option);}
     select.value=m.purpose;select.addEventListener('change',()=>{m.purpose=select.value;syncReliever();});label.append(select);row.append(label);
    }
-   const dose=text('label','Какое количество использовано'),input=document.createElement('input');input.type='text';input.maxLength=80;input.placeholder='Количество и единица из вашей записи';input.value=m.amount;input.dataset.medAmount=m.key;input.addEventListener('input',()=>m.amount=input.value.slice(0,80));dose.append(input);row.append(dose);
+   const dose=text('label','Какое количество использовано'),select=document.createElement('select'),detail=text('label',''),input=document.createElement('input');
+   select.dataset.medAmount=m.key;input.dataset.medExact=m.key;
+   const options=[['','Не указано'],...Array.from({length:8},(_,i)=>[String(i+1),inhalationLabel(i+1)]),['more','Более 8 ингаляций'],['other','Другое количество / единица']];
+   for(const [value,label] of options){const option=text('option',label);option.value=value;select.append(option);}
+   const saved=doseChoice(m.amount);select.value=saved.choice;input.value=saved.exact;
+   const updateDetail=()=>{
+    const more=select.value==='more',other=select.value==='other';detail.hidden=!more&&!other;
+    detail.replaceChildren(document.createTextNode(more?'Точное число ингаляций · если известно':'Количество и единица'),input);
+    input.type=more?'number':'text';input.min=more?'9':'';input.max=more?'9999':'';input.step=more?'1':'';input.maxLength=80;input.placeholder=more?'Более 8':'Например, количество в каплях';
+   };
+   const updateAmount=()=>{
+    input.setCustomValidity('');
+    if(select.value==='more'){
+     const value=Number(input.value);if(input.value!==''&&(!Number.isInteger(value)||value<9||value>9999)){input.setCustomValidity('Укажите целое число от 9 до 9999 или оставьте поле пустым.');return;}
+     m.amount=input.value===''?'Более 8 ингаляций':inhalationLabel(value);
+    }else if(select.value==='other'){m.amount=input.value.trim().slice(0,80);if(!m.amount)input.setCustomValidity('Укажите количество и единицу.');}
+    else m.amount=select.value?inhalationLabel(Number(select.value)):'';
+   };
+   select.addEventListener('change',()=>{input.value='';updateDetail();updateAmount();});input.addEventListener('input',updateAmount);
+   updateDetail();dose.append(select);row.append(dose,detail,text('p','Записывайте фактически использованное количество. Это не рекомендация по дозе.','pf-sub'));
    const when=text('label','Время применения'),time=document.createElement('input');time.type='time';time.value=m.time;time.dataset.medTime=m.key;time.addEventListener('input',()=>m.time=time.value);when.append(time);row.append(when);
    el('med-details').append(row);
   }
@@ -520,18 +543,27 @@ function calculatePredicted({age,height,sex}){
  root.addEventListener('click',event=>{if(event.target.closest('[data-med],#pf-add-attempt,#pf-remove-attempt'))patientDraftDirty=true;});
  el('date').addEventListener('change',()=>{if(entryMode==='pef')loadEntry();else{renderMeds();feedback();}});
  el('slot').addEventListener('change',loadEntry);
- ['a1','a2','a3','a4','a5','symptom'].forEach(id=>el(id).addEventListener('input',feedback));
+ ['a1','a2','a3','a4','a5'].forEach(id=>el(id).addEventListener('input',feedback));
+ el('symptom').addEventListener('change',event=>{
+  const input=event.target;if(!input.matches('input'))return;
+  if(input.checked&&['unknown','none'].includes(input.value))setChoices('symptom',[input.value]);
+  else if(input.checked)el('symptom').querySelectorAll('input').forEach(other=>{if(['unknown','none'].includes(other.value))other.checked=false;});
+  if(!checkedValues('symptom').length)setChoices('symptom',['unknown']);feedback();
+ });
+ el('event-kind').addEventListener('change',()=>{if(!checkedValues('event-kind').length)setChoices('event-kind',['symptoms']);});
  el('save').addEventListener('click',event=>{
   event.preventDefault();const attempts=values(),date=el('date').value,slot=el('slot').value;
   if(entryMode==='pef'&&!validValues(attempts)){el('error').textContent='Введите три целых положительных значения ПСВ и заполните добавленные попытки (до 9999 л/мин ). Пустую дополнительную попытку можно убрать.';return;}
   if(!validDate(date)){el('error').textContent='Укажите существующую дату не позднее сегодняшней.';return;}
-  const common={date,symptom:el('symptom').value,night:el('night').value==='unknown'?null:el('night').value==='yes',reliever:el('reliever').value,meds:Object.values(draftMeds).map(m=>({...m})),note:el('note').value.trim().slice(0,160)};
+  for(const input of el('med-details').querySelectorAll('input'))if(!input.checkValidity()){el('error').textContent=input.validationMessage;input.reportValidity();return;}
+  const selectedSymptoms=checkedValues('symptom');
+  const common={date,symptom:primarySymptom(selectedSymptoms),symptoms:selectedSymptoms,night:el('night').value==='unknown'?null:el('night').value==='yes',reliever:el('reliever').value,meds:Object.values(draftMeds).map(m=>({...m})),note:el('note').value.trim().slice(0,160)};
   if(entryMode==='event'){
-   const time=el('event-time').value,kind=el('event-kind').value;
+   const time=el('event-time').value,kinds=checkedValues('event-kind'),kind=kinds[0];
    if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)){el('error').textContent='Укажите время события.';return;}
-   if(common.symptom==='unknown'&&common.night===null&&common.reliever==='unknown'&&!common.meds.length&&!common.note&&kind==='symptoms'){el('error').textContent='Отметьте самочувствие, применение препарата или добавьте заметку.';return;}
-   if(['therapy','note'].includes(kind)&&!common.note){el('error').textContent='Опишите событие в заметке.';return;}
-   const id=editingEventId||crypto.randomUUID(),record={...common,id,time,kind},index=events().findIndex(r=>r.id===id);
+   if(common.symptom==='unknown'&&common.night===null&&common.reliever==='unknown'&&!common.meds.length&&!common.note&&kinds.length===1&&kind==='symptoms'){el('error').textContent='Отметьте самочувствие, применение препарата или добавьте заметку.';return;}
+   if(kinds.some(k=>['therapy','note'].includes(k))&&!common.note){el('error').textContent='Опишите событие в заметке.';return;}
+   const id=editingEventId||crypto.randomUUID(),record={...common,id,time,kind,kinds},index=events().findIndex(r=>r.id===id);
    if(index>=0)events()[index]=record;else events().push(record);
    editingEventId=id;ending=date;focusDate=date;state.days=Math.max(state.days,date>=day(6)?7:date>=day(13)?14:30);
    el('status').textContent=`Событие ${shortDate(date)} в ${time} сохранено без измерения ПСВ.`;
@@ -751,7 +783,7 @@ function calculatePredicted({age,height,sex}){
  const saveStatus=el('storage-status');
  // The updater waits for writes and never reloads after a failed save.
  window.DyshuUpdate={prepare:async()=>{await saveQueue;return storageReady&&!failedWrite&&pendingWrites===0&&!unsaved;}};
- function snapshot(){return structuredClone({format:'dyshu-diary',version:2,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
+ function snapshot(){return structuredClone({format:'dyshu-diary',version:3,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
  function applySnapshot(s){reminders=s.reminders||defaultReminders();for(const key of ['adult','child']){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));}
  function persist(){
   if(!storageReady)return;
@@ -760,16 +792,16 @@ function calculatePredicted({age,height,sex}){
   return saveQueue;
  }
  function validateSnapshot(s){
-  const fail=()=>{throw new Error('Файл не соответствует формату дневника (версии 1–2). Данные не изменены.');};
+  const fail=()=>{throw new Error('Файл не соответствует формату дневника (версии 1–3). Данные не изменены.');};
   const obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
   const str=(v,n)=>typeof v==='string'&&v.length<=n;
   const list=v=>Array.isArray(v)&&v.length<=100000;
   const date=d=>validDate(d);
-  if(!obj(s)||s.format!=='dyshu-diary'||![1,2].includes(s.version)||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
+  if(!obj(s)||s.format!=='dyshu-diary'||![1,2,3].includes(s.version)||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
   if(s.reminders!==undefined&&(!obj(s.reminders)||!['adult','child'].every(k=>validReminder(s.reminders[k]))))fail();
-  if(s.version===2&&s.reminders===undefined)fail();
+  if(s.version>=2&&s.reminders===undefined)fail();
   const meds=rows=>list(rows)&&rows.every(m=>obj(m)&&['salbutamol','berodual','smart'].includes(m.key)&&str(m.name,150)&&str(m.product||'',120)&&str(m.amount,80)&&str(m.time,5)&&(!m.time||/^([01]\d|2[0-3]):[0-5]\d$/.test(m.time))&&['rescue','maintenance'].includes(m.purpose));
-  const common=r=>obj(r)&&date(r.date)&&Object.hasOwn(symptoms,r.symptom)&&[null,true,false].includes(r.night)&&Object.hasOwn(relievers,r.reliever)&&str(r.note,160)&&meds(r.meds||[]);
+  const common=r=>obj(r)&&date(r.date)&&Object.hasOwn(symptoms,r.symptom)&&validSymptoms(symptomValues(r))&&(s.version<3||Array.isArray(r.symptoms)&&r.symptom===primarySymptom(r.symptoms))&&[null,true,false].includes(r.night)&&Object.hasOwn(relievers,r.reliever)&&str(r.note,160)&&meds(r.meds||[]);
   for(const key of ['adult','child']){
    const p=s.profiles[key];if(!obj(p)||!str(p.label,80)||!p.label.trim()||!str(p.birth,10)||p.birth&&(!date(p.birth)||ageAt(p.birth,today())>120))fail();
    if(!['histories','records','events','assessments'].every(k=>list(s[k][key])))fail();
@@ -779,8 +811,8 @@ function calculatePredicted({age,height,sex}){
     c.predicted=calculatePredicted(c);if(c.targetMode==='table'&&c.target!==c.predicted.value)fail();if(!validSettings(c))fail();dates.add(c.from);
    }
    s.histories[key].sort((a,b)=>a.from.localeCompare(b.from));
-   const keys=new Set();for(const r of s.records[key]){if(!common(r)||!['am','pm'].includes(r.slot)||!Object.hasOwn(contexts,r.context)||!Array.isArray(r.attempts)||!validValues(r.attempts)||r.pef!==Math.max(...r.attempts)||keys.has(r.date+r.slot))fail();r.attemptSpread=attemptSpread(r.attempts);keys.add(r.date+r.slot);}
-   const ids=new Set();for(const e of s.events[key]){if(!common(e)||!str(e.id,100)||!e.id||ids.has(e.id)||!['symptoms','infection','therapy','note'].includes(e.kind)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.time))fail();ids.add(e.id);}
+   const keys=new Set();for(const r of s.records[key]){if(!common(r)||!['am','pm'].includes(r.slot)||!Object.hasOwn(contexts,r.context)||!Array.isArray(r.attempts)||!validValues(r.attempts)||r.pef!==Math.max(...r.attempts)||keys.has(r.date+r.slot))fail();r.symptoms=symptomValues(r);r.symptom=primarySymptom(r.symptoms);r.attemptSpread=attemptSpread(r.attempts);keys.add(r.date+r.slot);}
+   const ids=new Set();for(const e of s.events[key]){if(!common(e)||!str(e.id,100)||!e.id||ids.has(e.id)||!['symptoms','infection','therapy','note'].includes(e.kind)||!validKinds(kindValues(e))||(s.version===3&&(!Array.isArray(e.kinds)||e.kind!==e.kinds[0]))||!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.time))fail();e.symptoms=symptomValues(e);e.symptom=primarySymptom(e.symptoms);e.kinds=kindValues(e);e.kind=e.kinds[0];ids.add(e.id);}
    const aids=new Set();for(const a of s.assessments[key]){
     if(!obj(a)||!str(a.id,100)||aids.has(a.id)||!date(a.date)||!controlScaleAllowed(a.instrument,a.age)||!Number.isInteger(a.sequence)||a.sequence<1||!['unknown','saba','ics_formoterol','ics_saba','other'].includes(a.reliever))fail();
     const score=calculateControlScore(a.instrument,a.answers);if(!score.ok)fail();a.score=score;
@@ -790,7 +822,7 @@ function calculatePredicted({age,height,sex}){
     aids.add(a.id);
    }
   }
-  s.reminders=s.reminders||defaultReminders();s.version=2;
+  s.reminders=s.reminders||defaultReminders();s.version=3;
   return s;
  }
  function downloadJSON(data,prefix){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=prefix+'-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
