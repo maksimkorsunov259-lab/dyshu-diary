@@ -127,3 +127,18 @@ html{background:#f2f8fd}
 #pf-demo input[type=checkbox],#pf-demo input[type=radio]{accent-color:var(--pf-accent)}
 @media(max-width:380px){#pf-demo .pf-brand{gap:8px}#pf-demo .pf-brand-title{gap:9px}#pf-demo .pf-brand-title strong{font-size:23px}#pf-demo .pf-brand-icon{width:49px;height:49px}#pf-demo .pf-demo-label{font-size:11px;padding:3px 6px}}
 @media print{html,body,#pf-demo{color:#12365a!important}}
+
+/* Shared patient navigation, using the blue Dyshu palette. */
+#pf-demo .pf-profile-link{border:0;background:transparent;color:var(--pf-accent);padding:8px 0;text-align:left;min-height:44px}
+#pf-demo .pf-header>.pf-profile-link{margin-top:14px}
+#pf-demo .pf-patient-switch{display:flex;align-items:end;gap:12px;margin-top:10px}
+#pf-demo .pf-patient-switch label{flex:1;min-width:0;color:var(--pf-muted);font-size:13px}
+#pf-demo .pf-patient-switch select{margin-top:5px;color:var(--pf-text);font-size:16px;text-overflow:ellipsis}
+#pf-demo .pf-patient-switch button{flex-shrink:0}
+#pf-demo .pf-patient-list{display:grid;gap:10px;margin-top:20px}
+#pf-demo .pf-patient-card{text-align:left;width:100%;padding:16px;overflow-wrap:anywhere}
+#pf-demo .pf-patient-card strong,#pf-demo .pf-patient-card span{display:block}
+#pf-demo .pf-patient-card span{margin-top:5px}
+#pf-demo .pf-patient-card[aria-pressed=true]{border-color:var(--pf-accent);background:#e3f5ff;color:var(--pf-text)}
+#pf-demo #pf-patients-title:focus{outline:none}
+@media(max-width:380px){#pf-demo .pf-patient-switch{gap:8px}#pf-demo .pf-patient-switch button{padding:10px;font-size:14px}}

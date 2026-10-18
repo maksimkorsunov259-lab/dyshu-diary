@@ -3,9 +3,15 @@
   <section class="pf-phone" aria-label="Мобильный дневник пикфлоуметрии">
    <header class="pf-header">
     <div class="pf-brand"><div class="pf-brand-title"><img class="pf-brand-icon" src="./icon-blue-192.png" width="56" height="56" alt=""><strong>Дышу</strong></div></div>
-    <select disabled id="pf-profile" aria-label="Выбрать дневник"><option value="adult">Мой дневник</option><option value="child">Дневник ребёнка</option></select>
+    <button disabled type="button" id="pf-edit-profile" class="pf-profile-link">Изменить профиль</button>
+    <div class="pf-patient-switch"><label for="pf-profile">Пациент<select disabled id="pf-profile" aria-label="Выбрать пациента"><option value="adult">Мой дневник</option><option value="child">Дневник ребёнка</option></select></label><button disabled type="button" id="pf-patients">Пациенты</button></div>
    </header>
    <aside id="pf-update-banner" class="pf-update-banner" hidden aria-label="Обновление приложения"><div><strong>Доступна новая версия «Дышу»</strong><p id="pf-update-message" role="status">Сохранённый дневник останется на устройстве.</p></div><button type="button" id="pf-update-now" class="pf-primary">Обновить приложение</button></aside><div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><main class="pf-content" inert>
+    <section id="pf-patients-panel" hidden aria-labelledby="pf-patients-title">
+     <h2 id="pf-patients-title" tabindex="-1">Пациенты</h2><p class="pf-sub">Выберите пациента, чтобы дополнить его дневник. Измерения, события, назначения и результаты опросников хранятся отдельно для каждого профиля.</p>
+     <div id="pf-patient-list" class="pf-patient-list"></div>
+     <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">Перейти к дневнику</button>
+    </section>
     <section id="pf-graph-panel">
      <h2>Дыхание в динамике</h2><p class="pf-sub" id="pf-period"></p>
      <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>

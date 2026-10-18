@@ -167,7 +167,7 @@ function calculatePredicted({age,height,sex}){
  let state={version:1,profile:'adult',screen:'graph',days:7,records:{adult:[],child:[]}};
  const eventsByProfile={adult:[],child:[]};
  let entryMode='pef',editingEventId=null,focusDate=ending,eventSequence=0,attemptCount=3;
- let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null;
+ let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null,patientDraftDirty=false;
  // Storage adapter and import/export are defined below.
  function records(){return state.records[state.profile];}
  function events(){return eventsByProfile[state.profile];}
@@ -255,7 +255,7 @@ function calculatePredicted({age,height,sex}){
  function render(){
   if(guideOpen)closeGuide();
   el('profile').value=state.profile;
-  for(const screen of ['graph','entry','report','settings','control'])el(screen+'-panel').hidden=state.screen!==screen;
+  for(const screen of ['graph','entry','report','settings','control','patients'])el(screen+'-panel').hidden=state.screen!==screen;
   root.querySelectorAll('[data-screen]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.screen===state.screen)));
   root.querySelectorAll('[data-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.days===state.days)));
   el('period').textContent=`${shortDate(day(state.days-1))} — ${shortDate(ending)}`;
@@ -263,7 +263,7 @@ function calculatePredicted({age,height,sex}){
   el('personal').textContent=base(c)?`100% от ${basisLabel(c)}: ${base(c)} л/мин`:'Ориентир не задан';
  el('today-title').textContent=shortDate(today());
  el('range-end').value=ending;el('range-end-report').value=ending;
- for(const o of el('profile').options)o.textContent=profiles[o.value].label;
+ renderPatientHeader();if(state.screen==='patients')renderPatients();
   el('reference-summary').replaceChildren(text('p',`Лучший ПСВ в дневнике: ${observed()} л/мин`),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ, одобренный врачом: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
   fillZones(el('zone-legend'),c);
   el('today').replaceChildren();
@@ -335,10 +335,10 @@ function calculatePredicted({age,height,sex}){
   const days=config(state.screen==='entry'?(el('date').value||ending):ending).monitorDays;
   el('guide-duration').textContent=days?'Назначенная длительность наблюдения: '+days+' дн.':'Срок наблюдения уточните у врача.';
   el('guide-back').textContent=state.screen==='settings'?'← Вернуться к профилю':'← Вернуться к записи';el('guide-done').textContent=state.screen==='settings'?'Вернуться к профилю':'Вернуться к измерению';
-  el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;root.querySelector('.pf-tabs').hidden=true;el('profile').disabled=true;persist();el('guide-back').focus();
+  el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;root.querySelector('.pf-tabs').hidden=true;renderPatientHeader();persist();el('guide-back').focus();
  }
  function closeGuide(){
-  if(!guideOpen)return;guideOpen=false;el('guide-panel').hidden=true;el(state.screen+'-panel').hidden=false;root.querySelector('.pf-tabs').hidden=false;el('profile').disabled=false;
+  if(!guideOpen)return;guideOpen=false;el('guide-panel').hidden=true;el(state.screen+'-panel').hidden=false;root.querySelector('.pf-tabs').hidden=false;renderPatientHeader();
   if(guideOrigin&&!guideOrigin.closest('[hidden]'))guideOrigin.focus();else el('guide-entry').focus();
  }
  for(const id of ['guide-entry','guide-settings','guide-first'])el(id).addEventListener('click',()=>openGuide(el(id)));
@@ -367,6 +367,7 @@ function calculatePredicted({age,height,sex}){
   el('feedback').textContent=severe?'При выраженной одышке и затруднении речи нужна экстренная медицинская помощь, независимо от цифры ПСВ.':valid&&!base(c)?zoneText(best,c):valid?`${number(best/base(c)*100)}% от ${basisLabel(c)} (${base(c)} л/мин). ${zoneText(best,c)}`:'';
  }
  function loadEntry(){
+  patientDraftDirty=false;
   const isEvent=entryMode==='event',r=isEvent?events().find(e=>e.id===editingEventId):records().find(r=>r.date===el('date').value&&r.slot===el('slot').value);
   if(isEvent&&r)el('date').value=r.date;
   el('entry-title').textContent=isEvent?(r?'Изменить событие':'Новое событие'):'Измерение ПСВ';
@@ -432,6 +433,7 @@ function calculatePredicted({age,height,sex}){
   if(validSettings(c))fillZones(el('zone-preview'),c);else el('zone-preview').replaceChildren(text('p','Укажите основу ПСВ и границы: 0 < красная < зелёная ≤ 100%.','pf-sub'));
  }
  function loadSettings(){
+  patientDraftDirty=false;
   const c=config(today());
   el('patient-name').value=profiles[state.profile].label;el('birth').value=profiles[state.profile].birth;
   el('monitor-days').value=c.monitorDays??'';
@@ -479,7 +481,43 @@ function calculatePredicted({age,height,sex}){
  root.querySelectorAll('[data-screen]').forEach(b=>b.addEventListener('click',()=>{el('status').textContent='';show(b.dataset.screen);}));
  root.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{state.days=+b.dataset.days;render();persist();}));
  el('add').addEventListener('click',()=>{entryMode='pef';editingEventId=null;el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';show('entry');});
- el('profile').addEventListener('change',()=>{state.profile=el('profile').value;editingEventId=null;assessmentId=null;focusDate=ending;el('status').textContent='';render();if(state.screen==='entry')loadEntry();if(state.screen==='settings')loadSettings();if(state.screen==='control')loadControl();persist();});
+ function renderPatientHeader(){
+  for(const option of el('profile').options){const p=profiles[option.value];option.textContent=p.label+(p.birth?' · '+shortDate(p.birth):'');}
+  el('profile').value=state.profile;
+  for(const id of ['profile','edit-profile','patients'])el(id).disabled=!storageReady||guideOpen;
+ }
+ function renderPatients(){
+  el('patient-list').replaceChildren();
+  for(const [id,profile] of Object.entries(profiles)){
+   const button=document.createElement('button');button.type='button';button.className='pf-patient-card';button.dataset.patient=id;button.setAttribute('aria-pressed',String(id===state.profile));
+   button.append(text('strong',profile.label),text('span',profile.birth?'Дата рождения: '+shortDate(profile.birth):'Дата рождения не указана','pf-sub'),text('span',`Измерений: ${state.records[id].length} · Событий: ${eventsByProfile[id].length}${id===state.profile?' · выбран':''}`,'pf-sub'));
+   button.addEventListener('click',()=>selectPatient(id));el('patient-list').append(button);
+  }
+ }
+ function allowPatientNavigation(){
+  if(!storageReady||guideOpen)return false;
+  if(pendingWrites||failedWrite){el('status').textContent='Дождитесь сохранения дневника. Если возникла ошибка, сохраните резервную копию перед сменой пациента.';return false;}
+  if(patientDraftDirty&&['entry','settings','control'].includes(state.screen)&&!confirm('Есть несохранённые изменения. Продолжить без сохранения этих полей?'))return false;
+  patientDraftDirty=false;return true;
+ }
+ function openPatientScreen(screen){
+  if(state.screen===screen&&!guideOpen){window.scrollTo({top:0,behavior:'instant'});return;}
+  if(!allowPatientNavigation())return;
+  el('status').textContent='';show(screen);window.scrollTo({top:0,behavior:'instant'});if(screen==='patients')el('patients-title').focus({preventScroll:true});
+ }
+ function selectPatient(id){
+  if(!Object.hasOwn(profiles,id))return;
+  if(!allowPatientNavigation()){renderPatientHeader();return;}
+  state.profile=id;editingEventId=null;assessmentId=null;draftMeds={};entryMode='pef';focusDate=ending;
+  el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';el('status').textContent='Выбран пациент: '+profiles[id].label+'.';
+  show('graph');window.scrollTo({top:0,behavior:'instant'});
+ }
+ el('profile').addEventListener('change',()=>selectPatient(el('profile').value));
+ el('patients').addEventListener('click',()=>openPatientScreen('patients'));
+ for(const id of ['edit-profile','patient-edit'])el(id).addEventListener('click',()=>openPatientScreen('settings'));
+ el('patients-back').addEventListener('click',()=>openPatientScreen('graph'));
+ root.addEventListener('input',event=>{if(event.target.closest('#pf-entry-panel,#pf-settings-panel,#pf-control-panel')&&event.target.matches('input,select,textarea'))patientDraftDirty=true;});
+ root.addEventListener('click',event=>{if(event.target.closest('[data-med],#pf-add-attempt,#pf-remove-attempt'))patientDraftDirty=true;});
  el('date').addEventListener('change',()=>{if(entryMode==='pef')loadEntry();else{renderMeds();feedback();}});
  el('slot').addEventListener('change',loadEntry);
  ['a1','a2','a3','a4','a5','symptom'].forEach(id=>el(id).addEventListener('input',feedback));
@@ -497,7 +535,7 @@ function calculatePredicted({age,height,sex}){
    if(index>=0)events()[index]=record;else events().push(record);
    editingEventId=id;ending=date;focusDate=date;state.days=Math.max(state.days,date>=day(6)?7:date>=day(13)?14:30);
    el('status').textContent=`Событие ${shortDate(date)} в ${time} сохранено без измерения ПСВ.`;
-   if(record.symptom==='severe'){render();el('new-event').hidden=false;el('save').textContent='Сохранить изменения в дневнике';feedback();persist();}else show('graph');
+   patientDraftDirty=false;if(record.symptom==='severe'){render();el('new-event').hidden=false;el('save').textContent='Сохранить изменения в дневнике';feedback();persist();}else show('graph');
    return;
   }
   const record={...common,slot,attempts,pef:Math.max(...attempts),attemptSpread:attemptSpread(attempts),context:el('context').value};
@@ -505,7 +543,7 @@ function calculatePredicted({age,height,sex}){
   if(index>=0)records()[index]=record;else records().push(record);
   ending=date;focusDate=date;state.days=Math.max(state.days,Math.ceil((Date.parse(ending)-Date.parse(date))/86400000)+1<=7?7:date>=day(13)?14:30);
   el('status').textContent=`${shortDate(date)}, ${slot==='am'?'утро':'вечер'} — ${record.pef} л/мин сохранено.`;
-  if(record.symptom==='severe'||zone(record.pef,config(date))==='red'){state.screen='entry';render();feedback();persist();}else show('graph');
+  patientDraftDirty=false;if(record.symptom==='severe'||zone(record.pef,config(date))==='red'){state.screen='entry';render();feedback();persist();}else show('graph');
  });
  function readControl(){
   const id=el('control-type').value;
@@ -564,6 +602,7 @@ function calculatePredicted({age,height,sex}){
   target.append(text('p','Результат опросника дополняет оценку врача и не меняет лечение или зоны ПСВ.','pf-sub'));
  }
  function loadControl(){
+  patientDraftDirty=false;
   const saved=assessments[state.profile].find(a=>a.id===assessmentId),c=config(saved?.date||today());
   el('control-date').value=saved?.date||today();el('control-age').value=saved?.age??ageAt(profiles[state.profile].birth,el('control-date').value)??c.age??'';
   el('control-reliever').value=saved?.reliever||(c.smartEnabled?'ics_formoterol':'unknown');
