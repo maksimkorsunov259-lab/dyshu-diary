@@ -682,7 +682,8 @@ function calculatePredicted({age,height,sex}){
 
  // Modal leaves the active screen and all draft fields untouched.
  const aboutDialog=el('about');
- FamilyAbout.create({root,dialog:aboutDialog,trigger:'[data-open-about]'});
+ const aboutAuthor=aboutDialog.querySelector('.pf-author');
+ FamilyAbout.create({root,dialog:aboutDialog,trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
 
