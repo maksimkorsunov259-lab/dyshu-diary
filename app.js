@@ -682,6 +682,7 @@ function calculatePredicted({age,height,sex}){
 
  // Modal leaves the active screen and all draft fields untouched.
  const aboutDialog=el('about');
+ FamilyAbout.create({root,dialog:aboutDialog,trigger:'[data-open-about]'});
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
 
