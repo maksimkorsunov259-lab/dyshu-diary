@@ -349,7 +349,8 @@ function calculatePredicted({age,height,sex}){
   if(guideOrigin?.isConnected&&!guideOrigin.closest('[hidden]'))guideOrigin.focus({preventScroll:true});
   if(guidePosition)window.scrollTo({left:guidePosition.x,top:guidePosition.y,behavior:'instant'});
  }
- for(const id of ['guide-entry','guide-settings','guide-first'])el(id).addEventListener('click',()=>openGuide(el(id)));
+ for(const id of ['guide-entry','guide-first'])el(id).addEventListener('click',()=>openGuide(el(id)));
+ el('guide-videos').addEventListener('click',()=>{const content=el('guide-videos-content');content.hidden=!content.hidden;el('guide-videos').setAttribute('aria-expanded',String(!content.hidden));});
  for(const id of ['guide-back','guide-done'])el(id).addEventListener('click',closeGuide);
  el('guide-panel').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeGuide();}});
  el('guide-dismiss').addEventListener('click',()=>{guideDismissed[state.profile]=true;el('guide-invitation').hidden=true;persist();});

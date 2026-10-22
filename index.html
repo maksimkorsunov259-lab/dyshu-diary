@@ -13,11 +13,11 @@
      <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">Перейти к дневнику</button>
     </section>
     <section id="pf-graph-panel">
-     <h2>Дневник</h2><p class="pf-sub" id="pf-period"></p><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button>
+     <h2>Дневник</h2><p class="pf-sub" id="pf-period"></p>
      <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
      <div class="pf-box"><div class="pf-row"><h3>ПСВ, л/мин</h3><span class="pf-sub" id="pf-personal"></span></div><svg id="pf-chart" class="pf-chart" role="img" aria-label="Утренние и вечерние значения пиковой скорости выдоха"></svg><div class="pf-legend"><span><i class="pf-dot"></i>Утро</span><span><i class="pf-square"></i>Вечер</span></div><p class="pf-sub">Разрыв — нет измерения. Пунктир — 100% выбранного ориентира на дату измерения.</p></div>
      <div class="pf-box"><h3>События выбранного дня</h3><div class="pf-daynav"><button type="button" id="pf-prev-day" aria-label="Предыдущий день">←</button><input type="date" id="pf-timeline-date" aria-label="Дата на временной шкале" min="1900-01-01"><button type="button" id="pf-next-day" aria-label="Следующий день">→</button></div><div id="pf-timeline" aria-live="polite"></div><button type="button" id="pf-add-event" class="pf-primary pf-wide">Симптомы / ингалятор</button></div>
-     <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div></div>
+     <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button></div>
      <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-reference-summary"></div><div id="pf-zone-legend" class="pf-zones"></div><button type="button" id="pf-configure" class="pf-wide">Настройки врача</button></div>
 
     </section>
@@ -54,6 +54,16 @@
       <p>Всего — до пяти попыток. Если разброс сохраняется, сохраните результаты с отметкой о расхождении и обсудите технику с врачом. Не продолжайте бесконечно добиваться одинаковых цифр.</p>
       <p class="pf-sub">Близкие результаты сами по себе не гарантируют правильную технику. При головокружении или ухудшении самочувствия прекратите манёвры.</p>
      </details>
+     <button type="button" id="pf-guide-videos" class="pf-wide" aria-expanded="false" aria-controls="pf-guide-videos-content">Полезные видеоинструкции от автора</button>
+     <div id="pf-guide-videos-content" class="pf-box" hidden>
+      <p>Раздел дополнится видеоинструкциями от автора:</p>
+      <ul>
+       <li>по использованию пикфлоуметров;</li>
+       <li>по использованию небулайзера;</li>
+       <li>по использованию различных устройств для доставки препаратов базисной терапии;</li>
+       <li>по проведению оценки функции внешнего дыхания на приёме врача.</li>
+      </ul>
+     </div>
      <button type="button" id="pf-guide-done" class="pf-primary pf-wide">Вернуться к измерению</button>
     </section>
 
@@ -79,8 +89,8 @@
     </section>
     <section id="pf-settings-panel" class="pf-settings" hidden>
      <h2>Настройки врача</h2><p class="pf-sub">Перенесите назначения со своего плана лечения</p>
-     <div class="pf-box"><h3>Пациент</h3><label>Имя или псевдоним<input id="pf-patient-name" maxlength="80" autocomplete="off"></label><label>Дата рождения (необязательно)<input id="pf-birth" type="date"></label><p class="pf-sub">Дата рождения помогает определять возраст для опросников. Без неё указывайте возраст на дату назначения и заполнения вручную.</p></div><button type="button" id="pf-guide-settings" class="pf-wide">Инструкция по пикфлоуметрии</button>
-     <div class="pf-box"><h3>Наблюдение дома</h3><label>Назначенная длительность, дней<input id="pf-monitor-days" type="number" min="1" max="365" step="1" placeholder="Не указана"></label><p class="pf-sub">Например, 14–21 день по назначению врача. Срок можно увеличить при продолжении наблюдения; прежние записи сохраняются.</p></div>
+     <div class="pf-box"><h3>Пациент</h3><label>Имя или псевдоним<input id="pf-patient-name" maxlength="80" autocomplete="off"></label><label>Дата рождения (необязательно)<input id="pf-birth" type="date"></label><p class="pf-sub">Дата рождения помогает определять возраст для опросников. Без неё указывайте возраст на дату назначения и заполнения вручную.</p></div>
+     <div class="pf-box"><h3>Продолжительность наблюдения дома</h3><label>Назначенная длительность, дней<input id="pf-monitor-days" type="number" min="1" max="365" step="1" placeholder="Не указана"></label><p class="pf-sub">Например, 14–21 день по назначению врача. Срок можно увеличить при продолжении наблюдения; прежние записи сохраняются.</p></div>
      <div class="pf-box"><h3>Ориентиры ПСВ</h3><p id="pf-observed" class="pf-sub"></p>
       <input id="pf-confirmed" type="hidden">
       <div class="pf-grid"><label>Возраст, лет<input id="pf-age" type="number" min="0" max="120" step="1"></label><label>Рост, см<input id="pf-height" type="number" min="1" max="250" step="0.1"></label></div>
@@ -131,7 +141,7 @@
  <p class="pf-sub">После установки проверьте, что дневник виден при запуске с иконки. При необходимости перенесите его резервной копией.</p>
  <button type="button" id="pf-update" class="pf-wide" hidden>Обновление готово — перезапустить</button>
  <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
- <p class="pf-sub">Версия 1.1 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
+ <p class="pf-sub">Версия 1.1.1 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
 </details>
 <div class="pf-box pf-reminders"><h3>Напоминания о ПСВ</h3>
  <p class="pf-sub">Выберите удобное время для текущего дневника. Оповещения будут приходить из календаря телефона после добавления событий.</p>
@@ -141,7 +151,7 @@
  <button type="button" id="pf-reminder-export" class="pf-wide">Скачать для календаря (.ics)</button>
  <p id="pf-reminder-status" class="pf-sub" role="status"></p>
  <details><summary>Как включить оповещения</summary>
- <ol><li>В разделе «Наблюдение дома» укажите назначенную длительность. Укажите дату в поле «Применять настройки и назначение с даты» и сохраните профиль. Эта дата считается первым днём наблюдения.</li><li>Скачайте файл и добавьте события в календарь. В нём только будущие напоминания до последнего дня наблюдения включительно. Имя пациента, показатели и записи дневника в файл не включаются.</li><li>Проверьте утреннее и вечернее время, дату окончания повторов, наличие напоминания в момент события и разрешение на уведомления у календаря.</li><li>Если файл не открывается на телефоне, импортируйте его через функцию импорта вашего календаря на компьютере либо создайте два ежедневных напоминания вручную с той же датой окончания.</li></ol>
+ <ol><li>В разделе «Продолжительность наблюдения дома» укажите назначенную длительность. Укажите дату в поле «Применять настройки и назначение с даты» и сохраните профиль. Эта дата считается первым днём наблюдения.</li><li>Скачайте файл и добавьте события в календарь. В нём только будущие напоминания до последнего дня наблюдения включительно. Имя пациента, показатели и записи дневника в файл не включаются.</li><li>Проверьте утреннее и вечернее время, дату окончания повторов, наличие напоминания в момент события и разрешение на уведомления у календаря.</li><li>Если файл не открывается на телефоне, импортируйте его через функцию импорта вашего календаря на компьютере либо создайте два ежедневных напоминания вручную с той же датой окончания.</li></ol>
  <p class="pf-sub">Время задаётся как местное время календаря. После смены часового пояса проверьте расписание. Приложение не может проверить, завершён ли импорт и разрешены ли уведомления.</p>
  <p class="pf-sub"><strong>Если раньше вы добавили бессрочные напоминания:</strong> удалите прежние две серии целиком в календаре перед импортом нового файла. Обновление приложения не сокращает их автоматически.</p>
  <p class="pf-sub">Изменение времени или срока здесь не обновляет уже добавленные события. Измените серии в календаре либо удалите их и импортируйте новый файл. Для нового курса согласуйте дату и длительность с врачом. Напоминания не проверяют, внесли ли вы уже ПСВ.</p>
