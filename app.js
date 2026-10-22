@@ -506,13 +506,13 @@ function calculatePredicted({age,height,sex}){
   histories[state.profile]=[...histories[state.profile].filter(h=>h.from!==c.from),c].sort((a,b)=>a.from.localeCompare(b.from));
   el('status').textContent=`Настройки профиля применены с ${shortDate(c.from)}. Измерения до этой даты используют прежние границы.`;show('graph');
  });
- root.querySelectorAll('.pf-tabs [data-screen]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.screen;if(next==='guide'){openGuide(b);return;}if(next===state.screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}if(!allowPatientNavigation(true))return;if(guideOpen)closeGuide();el('status').textContent='';show(next);window.scrollTo({top:0,behavior:'instant'});}));
+ root.querySelectorAll('.pf-tabs [data-screen]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.screen;if(next==='guide'){openGuide(b);return;}if(next===state.screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}if(!allowPatientNavigation())return;if(guideOpen)closeGuide();el('status').textContent='';show(next);window.scrollTo({top:0,behavior:'instant'});}));
  root.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{state.days=+b.dataset.days;render();persist();}));
  el('add').addEventListener('click',()=>{entryMode='pef';editingEventId=null;el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';show('entry');});
  function renderPatientHeader(){
   for(const option of el('profile').options){const p=profiles[option.value];option.textContent=p.label+(p.birth?' · '+shortDate(p.birth):'');}
   el('profile').value=state.profile;
-  for(const id of ['profile','edit-profile','patients'])el(id).disabled=!storageReady||guideOpen;
+  for(const id of ['profile','edit-profile','patients'])el(id).disabled=!storageReady;
  }
  function renderPatients(){
   el('patient-list').replaceChildren();
@@ -522,19 +522,20 @@ function calculatePredicted({age,height,sex}){
    button.addEventListener('click',()=>selectPatient(id));el('patient-list').append(button);
   }
  }
- function allowPatientNavigation(fromGuide=false){
-  if(!storageReady||guideOpen&&!fromGuide)return false;
+ function allowPatientNavigation(){
+  if(!storageReady)return false;
   if(pendingWrites||failedWrite){el('status').textContent='Дождитесь сохранения дневника. Если возникла ошибка, сохраните резервную копию перед сменой пациента.';return false;}
   if(patientDraftDirty&&['entry','settings','control'].includes(state.screen)&&!confirm('Есть несохранённые изменения. Продолжить без сохранения этих полей?'))return false;
   patientDraftDirty=false;return true;
  }
  function openPatientScreen(screen){
-  if(state.screen===screen&&!guideOpen){window.scrollTo({top:0,behavior:'instant'});return;}
+  if(state.screen===screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}
   if(!allowPatientNavigation())return;
   el('status').textContent='';show(screen);window.scrollTo({top:0,behavior:'instant'});if(screen==='patients')el('patients-title').focus({preventScroll:true});
  }
  function selectPatient(id){
   if(!Object.hasOwn(profiles,id))return;
+  if(id===state.profile){renderPatientHeader();return;}
   if(!allowPatientNavigation()){renderPatientHeader();return;}
   state.profile=id;editingEventId=null;assessmentId=null;draftMeds={};entryMode='pef';focusDate=ending;
   el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';el('status').textContent='Выбран пациент: '+profiles[id].label+'.';
