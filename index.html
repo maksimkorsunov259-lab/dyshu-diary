@@ -6,18 +6,18 @@
     <button disabled type="button" id="pf-edit-profile" class="pf-profile-link">Изменить профиль</button>
     <div class="pf-patient-switch"><label for="pf-profile">Пациент<select disabled id="pf-profile" aria-label="Выбрать пациента"><option value="adult">Мой дневник</option><option value="child">Дневник ребёнка</option></select></label><button disabled type="button" id="pf-patients">Пациенты</button></div>
    </header>
-   <aside id="pf-update-banner" class="pf-update-banner" hidden aria-label="Обновление приложения"><div><strong>Доступна новая версия «Дышу»</strong><p id="pf-update-message" role="status">Сохранённый дневник останется на устройстве.</p></div><button type="button" id="pf-update-now" class="pf-primary">Обновить приложение</button></aside><div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><main class="pf-content" inert>
+   <aside id="pf-update-banner" class="pf-update-banner" hidden aria-label="Обновление приложения"><div><strong>Доступна новая версия «Дышу»</strong><p id="pf-update-message" role="status">Сохранённый дневник останется на устройстве.</p></div><button type="button" id="pf-update-now" class="pf-primary">Обновить приложение</button></aside><div id="pf-loading" role="status">Открываем дневник…</div><div id="pf-storage-status" role="status" class="pf-storage"></div><nav inert class="pf-tabs" aria-label="Разделы дневника"><button type="button" data-screen="graph" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6c2 0 2 2 2 2s0-2 2-2h6v16h-6c-2 0-2 1-2 1s0-1-2-1H4ZM12 6v15"/></svg><span>Дневник</span></button><button type="button" data-screen="report" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5Zm10 0v5h4M8 12h8m-8 4h6"/></svg><span>Отчёт для врача</span></button><button type="button" data-screen="guide" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg><span>Памятка</span></button><button type="button" data-screen="settings" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Профиль</span></button></nav><main class="pf-content" inert>
     <section id="pf-patients-panel" hidden aria-labelledby="pf-patients-title">
      <h2 id="pf-patients-title" tabindex="-1">Пациенты</h2><p class="pf-sub">Выберите пациента, чтобы дополнить его дневник. Измерения, события, назначения и результаты опросников хранятся отдельно для каждого профиля.</p>
      <div id="pf-patient-list" class="pf-patient-list"></div>
      <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">Перейти к дневнику</button>
     </section>
     <section id="pf-graph-panel">
-     <h2>Дыхание в динамике</h2><p class="pf-sub" id="pf-period"></p>
+     <h2>Дневник</h2><p class="pf-sub" id="pf-period"></p><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button>
      <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
      <div class="pf-box"><div class="pf-row"><h3>ПСВ, л/мин</h3><span class="pf-sub" id="pf-personal"></span></div><svg id="pf-chart" class="pf-chart" role="img" aria-label="Утренние и вечерние значения пиковой скорости выдоха"></svg><div class="pf-legend"><span><i class="pf-dot"></i>Утро</span><span><i class="pf-square"></i>Вечер</span></div><p class="pf-sub">Разрыв — нет измерения. Пунктир — 100% выбранного ориентира на дату измерения.</p></div>
      <div class="pf-box"><h3>События выбранного дня</h3><div class="pf-daynav"><button type="button" id="pf-prev-day" aria-label="Предыдущий день">←</button><input type="date" id="pf-timeline-date" aria-label="Дата на временной шкале" min="1900-01-01"><button type="button" id="pf-next-day" aria-label="Следующий день">→</button></div><div id="pf-timeline" aria-live="polite"></div><button type="button" id="pf-add-event" class="pf-primary pf-wide">Симптомы / ингалятор</button></div>
-     <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div><button type="button" class="pf-primary pf-wide" id="pf-add">Добавить измерение</button></div>
+     <div class="pf-box"><div class="pf-row"><h3 id="pf-today-title">Сегодня</h3><span class="pf-sub">Сегодня</span></div><div id="pf-today"></div></div>
      <div class="pf-box"><h3>Индивидуальные ориентиры</h3><div id="pf-reference-summary"></div><div id="pf-zone-legend" class="pf-zones"></div><button type="button" id="pf-configure" class="pf-wide">Настройки врача</button></div>
 
     </section>
@@ -131,7 +131,7 @@
  <p class="pf-sub">После установки проверьте, что дневник виден при запуске с иконки. При необходимости перенесите его резервной копией.</p>
  <button type="button" id="pf-update" class="pf-wide" hidden>Обновление готово — перезапустить</button>
  <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
- <p class="pf-sub">Версия 1.0 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
+ <p class="pf-sub">Версия 1.1 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
 </details>
 <div class="pf-box pf-reminders"><h3>Напоминания о ПСВ</h3>
  <p class="pf-sub">Выберите удобное время для текущего дневника. Оповещения будут приходить из календаря телефона после добавления событий.</p>
@@ -202,7 +202,7 @@
   </section>
    </dialog>
 <div class="pf-footer"><button type="button" data-open-about>О приложении</button><p>© 2026 Коршунов Максим Александрович. Все права защищены.</p><p>Дневник не заменяет назначение и консультацию врача.</p></div>
-   <nav inert class="pf-tabs" aria-label="Разделы дневника"><button type="button" data-screen="graph" aria-pressed="true"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>Динамика</button><button type="button" data-screen="entry" aria-pressed="false"><i data-lucide="circle-plus" aria-hidden="true"></i>Записать</button><button type="button" data-screen="report" aria-pressed="false"><i data-lucide="file-text" aria-hidden="true"></i>Отчёт</button><button type="button" data-screen="settings" aria-pressed="false"><i data-lucide="sliders-horizontal" aria-hidden="true"></i>Профиль</button></nav>
+
   </section>
  </div>
 </div>

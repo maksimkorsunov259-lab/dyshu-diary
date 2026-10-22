@@ -168,7 +168,7 @@ function calculatePredicted({age,height,sex}){
  let state={version:1,profile:'adult',screen:'graph',days:7,records:{adult:[],child:[]}};
  const eventsByProfile={adult:[],child:[]};
  let entryMode='pef',editingEventId=null,focusDate=ending,eventSequence=0,attemptCount=3;
- let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null,patientDraftDirty=false;
+ let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null,guidePosition=null,patientDraftDirty=false;
  // Storage adapter and import/export are defined below.
  function records(){return state.records[state.profile];}
  function events(){return eventsByProfile[state.profile];}
@@ -255,12 +255,13 @@ function calculatePredicted({age,height,sex}){
    svg.onclick=e=>{const rect=svg.getBoundingClientRect(),i=Math.max(0,Math.min(state.days-1,Math.round(((e.clientX-rect.left)*width/rect.width-left)/(width-left-right)*(state.days-1))));focusDate=dates[i];renderTimeline();draw();};
   }
  }
+ function renderTabs(){const active=guideOpen?'guide':({entry:'graph',control:'report',patients:'settings'})[state.screen]||state.screen;root.querySelectorAll('.pf-tabs [data-screen]').forEach(button=>{const selected=button.dataset.screen===active;button.setAttribute('aria-pressed',String(selected));if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});}
  function show(screen){state.screen=screen;render();if(screen==='entry')loadEntry();if(screen==='settings')loadSettings();if(screen==='control')loadControl();persist();}
  function render(){
   if(guideOpen)closeGuide();
   el('profile').value=state.profile;
   for(const screen of ['graph','entry','report','settings','control','patients'])el(screen+'-panel').hidden=state.screen!==screen;
-  root.querySelectorAll('[data-screen]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.screen===state.screen)));
+  renderTabs();
   root.querySelectorAll('[data-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.days===state.days)));
   el('period').textContent=`${shortDate(day(state.days-1))} — ${shortDate(ending)}`;
   const c=config();
@@ -335,15 +336,18 @@ function calculatePredicted({age,height,sex}){
   method.append(text('p','Вариабельность ПСВ пока не рассчитывается: отдельный показатель добавим после согласования протокола сопоставимых измерений.','pf-sub'));
  }
  function openGuide(button){
-  guideOrigin=button;guideOpen=true;guideDismissed[state.profile]=true;el('guide-invitation').hidden=true;
+  if(guideOpen){window.scrollTo({top:0,behavior:'instant'});return;}
+  guideOrigin=button;guidePosition={x:window.scrollX,y:window.scrollY};guideOpen=true;guideDismissed[state.profile]=true;el('guide-invitation').hidden=true;
   const days=config(state.screen==='entry'?(el('date').value||ending):ending).monitorDays;
   el('guide-duration').textContent=days?'Назначенная длительность наблюдения: '+days+' дн.':'Срок наблюдения уточните у врача.';
-  el('guide-back').textContent=state.screen==='settings'?'← Вернуться к профилю':'← Вернуться к записи';el('guide-done').textContent=state.screen==='settings'?'Вернуться к профилю':'Вернуться к измерению';
-  el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;root.querySelector('.pf-tabs').hidden=true;renderPatientHeader();persist();el('guide-back').focus();
+  const destination=({graph:'к дневнику',entry:'к записи',settings:'к профилю',report:'к отчёту',patients:'к пациентам',control:'к опроснику'})[state.screen]||'к дневнику';
+  el('guide-back').textContent='← Вернуться '+destination;el('guide-done').textContent='Вернуться '+destination;
+  el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;renderTabs();renderPatientHeader();persist();window.scrollTo({top:0,behavior:'instant'});el('guide-back').focus({preventScroll:true});
  }
  function closeGuide(){
-  if(!guideOpen)return;guideOpen=false;el('guide-panel').hidden=true;el(state.screen+'-panel').hidden=false;root.querySelector('.pf-tabs').hidden=false;renderPatientHeader();
-  if(guideOrigin&&!guideOrigin.closest('[hidden]'))guideOrigin.focus();else el('guide-entry').focus();
+  if(!guideOpen)return;guideOpen=false;el('guide-panel').hidden=true;el(state.screen+'-panel').hidden=false;renderTabs();renderPatientHeader();
+  if(guideOrigin?.isConnected&&!guideOrigin.closest('[hidden]'))guideOrigin.focus({preventScroll:true});
+  if(guidePosition)window.scrollTo({left:guidePosition.x,top:guidePosition.y,behavior:'instant'});
  }
  for(const id of ['guide-entry','guide-settings','guide-first'])el(id).addEventListener('click',()=>openGuide(el(id)));
  for(const id of ['guide-back','guide-done'])el(id).addEventListener('click',closeGuide);
@@ -501,7 +505,7 @@ function calculatePredicted({age,height,sex}){
   histories[state.profile]=[...histories[state.profile].filter(h=>h.from!==c.from),c].sort((a,b)=>a.from.localeCompare(b.from));
   el('status').textContent=`Настройки профиля применены с ${shortDate(c.from)}. Измерения до этой даты используют прежние границы.`;show('graph');
  });
- root.querySelectorAll('[data-screen]').forEach(b=>b.addEventListener('click',()=>{el('status').textContent='';show(b.dataset.screen);}));
+ root.querySelectorAll('.pf-tabs [data-screen]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.screen;if(next==='guide'){openGuide(b);return;}if(next===state.screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}if(!allowPatientNavigation(true))return;if(guideOpen)closeGuide();el('status').textContent='';show(next);window.scrollTo({top:0,behavior:'instant'});}));
  root.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{state.days=+b.dataset.days;render();persist();}));
  el('add').addEventListener('click',()=>{entryMode='pef';editingEventId=null;el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';show('entry');});
  function renderPatientHeader(){
@@ -517,8 +521,8 @@ function calculatePredicted({age,height,sex}){
    button.addEventListener('click',()=>selectPatient(id));el('patient-list').append(button);
   }
  }
- function allowPatientNavigation(){
-  if(!storageReady||guideOpen)return false;
+ function allowPatientNavigation(fromGuide=false){
+  if(!storageReady||guideOpen&&!fromGuide)return false;
   if(pendingWrites||failedWrite){el('status').textContent='Дождитесь сохранения дневника. Если возникла ошибка, сохраните резервную копию перед сменой пациента.';return false;}
   if(patientDraftDirty&&['entry','settings','control'].includes(state.screen)&&!confirm('Есть несохранённые изменения. Продолжить без сохранения этих полей?'))return false;
   patientDraftDirty=false;return true;
