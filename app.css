@@ -150,3 +150,9 @@ html{background:#f2f8fd}
 #pf-demo .pf-multiple input[type=checkbox]{width:20px;height:20px;min-height:20px;flex-shrink:0;margin:0;padding:0;accent-color:var(--pf-accent)}
 
 #pf-demo .pf-tabs svg{width:20px;height:20px;flex-shrink:0}#pf-demo .pf-tabs button{gap:5px;padding:7px 2px}#pf-demo .pf-tabs button span{max-width:100%;white-space:normal}#pf-demo #pf-guide-panel{scroll-margin-top:90px}
+
+/* Family-style tagline beneath the application name. */
+#pf-demo .pf-brand-copy{min-width:0}
+#pf-demo .pf-brand-copy strong{display:block}
+#pf-demo .pf-tag{margin-top:3px;font-size:11px;line-height:1.5;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--pf-muted)}
+@media(max-width:380px){#pf-demo .pf-tag{font-size:10px;letter-spacing:.8px}}
