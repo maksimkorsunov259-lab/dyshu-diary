@@ -12,7 +12,7 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory() as tmp:
  assert nav.evaluate('e=>!!(e.compareDocumentPosition(document.querySelector(".pf-content"))&Node.DOCUMENT_POSITION_FOLLOWING)')
  for width in [320,390,1440]:
   p.set_viewport_size({'width':width,'height':900});p.evaluate('scrollTo(0,0)');header=p.locator('.pf-header').bounding_box();n=nav.bounding_box();assert n['y']>=header['y']+header['height'];assert n['y']<400;assert not p.evaluate('document.documentElement.scrollWidth>innerWidth')
-  p.evaluate('scrollTo(0,600)');assert abs(nav.bounding_box()['y'])<2
+  p.evaluate('scrollTo(0,600)');assert abs(p.locator('.family-topbar').bounding_box()['y'])<2;assert nav.bounding_box()['y']>=p.locator('.pf-patient-switch').bounding_box()['height']
   nav.locator('[data-screen=guide]').click();expect(p.locator('#pf-guide-panel')).to_be_visible();expect(nav).to_be_visible();expect(nav.locator('[data-screen=guide]')).to_have_attribute('aria-current','page');assert p.locator('.pf-guide-steps li').count()==10
   p.locator('#pf-guide-back').click();expect(p.locator('#pf-graph-panel')).to_be_visible();expect(nav.locator('[data-screen=graph]')).to_have_attribute('aria-current','page');p.evaluate('DyshuUpdate.prepare()')
  p.set_viewport_size({'width':390,'height':844});p.locator('#pf-add').click();p.locator('#pf-a1').fill('300');p.locator('#pf-a2').fill('310');p.locator('#pf-a3').fill('305');p.evaluate('DyshuUpdate.prepare()')
