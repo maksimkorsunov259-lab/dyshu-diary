@@ -168,7 +168,7 @@ function calculatePredicted({age,height,sex}){
  let state={version:1,profile:'adult',screen:'graph',days:7,records:{adult:[],child:[]}};
  const eventsByProfile={adult:[],child:[]};
  let entryMode='pef',editingEventId=null,focusDate=ending,eventSequence=0,attemptCount=3;
- let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null,guidePosition=null,patientDraftDirty=false;
+ let guideDismissed={adult:false,child:false},guideOpen=false,guideOrigin=null,guidePosition=null,patientReturn='graph',patientDraftDirty=false;
  // Storage adapter and import/export are defined below.
  function records(){return state.records[state.profile];}
  function events(){return eventsByProfile[state.profile];}
@@ -340,8 +340,8 @@ function calculatePredicted({age,height,sex}){
   guideOrigin=button;guidePosition={x:window.scrollX,y:window.scrollY};guideOpen=true;guideDismissed[state.profile]=true;el('guide-invitation').hidden=true;
   const days=config(state.screen==='entry'?(el('date').value||ending):ending).monitorDays;
   el('guide-duration').textContent=days?'Назначенная длительность наблюдения: '+days+' дн.':'Срок наблюдения уточните у врача.';
-  const destination=({graph:'к дневнику',entry:'к записи',settings:'к профилю',report:'к отчёту',patients:'к пациентам',control:'к опроснику'})[state.screen]||'к дневнику';
-  el('guide-back').textContent='← Вернуться '+destination;el('guide-done').textContent='Вернуться '+destination;
+  const destination=({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник'})[state.screen]||'Дневник';
+  el('guide-back').textContent='← '+destination;el('guide-done').textContent='← '+destination;
   el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;renderTabs();renderPatientHeader();persist();window.scrollTo({top:0,behavior:'instant'});el('guide-back').focus({preventScroll:true});
  }
  function closeGuide(){
@@ -530,7 +530,9 @@ function calculatePredicted({age,height,sex}){
  }
  function openPatientScreen(screen){
   if(state.screen===screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}
+  const origin=guideOpen?'guide':state.screen;
   if(!allowPatientNavigation())return;
+  if(screen==='patients'){patientReturn=origin;el('patients-back').textContent='← '+({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',control:'Опросник',guide:'Памятка'})[origin];}
   el('status').textContent='';show(screen);window.scrollTo({top:0,behavior:'instant'});if(screen==='patients')el('patients-title').focus({preventScroll:true});
  }
  function selectPatient(id){
@@ -544,7 +546,8 @@ function calculatePredicted({age,height,sex}){
  el('profile').addEventListener('change',()=>selectPatient(el('profile').value));
  el('patients').addEventListener('click',()=>openPatientScreen('patients'));
  for(const id of ['edit-profile','patient-edit'])el(id).addEventListener('click',()=>openPatientScreen('settings'));
- el('patients-back').addEventListener('click',()=>openPatientScreen('graph'));
+ el('patients-back').addEventListener('click',()=>{if(patientReturn==='guide')openGuide(el('patients-back'));else openPatientScreen(patientReturn);});
+ el('entry-back').addEventListener('click',()=>openPatientScreen('graph'));
  root.addEventListener('input',event=>{if(event.target.closest('#pf-entry-panel,#pf-settings-panel,#pf-control-panel')&&event.target.matches('input,select,textarea'))patientDraftDirty=true;});
  root.addEventListener('click',event=>{if(event.target.closest('[data-med],#pf-add-attempt,#pf-remove-attempt'))patientDraftDirty=true;});
  el('date').addEventListener('change',()=>{if(entryMode==='pef')loadEntry();else{renderMeds();feedback();}});
@@ -689,7 +692,7 @@ function calculatePredicted({age,height,sex}){
  // Modal leaves the active screen and all draft fields untouched.
  const aboutDialog=el('about');
  const aboutAuthor=aboutDialog.querySelector('.pf-author');
- FamilyAbout.create({root,dialog:aboutDialog,trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
+ FamilyAbout.create({root,dialog:aboutDialog,returnLabel:()=> '← '+(guideOpen?'Памятка':({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник'})[state.screen]||'Дневник'),trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
 

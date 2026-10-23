@@ -10,7 +10,7 @@
     <section id="pf-patients-panel" hidden aria-labelledby="pf-patients-title">
      <h2 id="pf-patients-title" tabindex="-1">Пациенты</h2><p class="pf-sub">Выберите пациента, чтобы дополнить его дневник. Измерения, события, назначения и результаты опросников хранятся отдельно для каждого профиля.</p>
      <div id="pf-patient-list" class="pf-patient-list"></div>
-     <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">Перейти к дневнику</button>
+     <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">← Дневник</button>
     </section>
     <section id="pf-graph-panel">
      <h2>Дневник</h2><p class="pf-sub" id="pf-period"></p>
@@ -22,7 +22,7 @@
 
     </section>
         <section id="pf-guide-panel" hidden aria-labelledby="pf-guide-title">
-     <button type="button" id="pf-guide-back">← Вернуться к записи</button>
+     <button type="button" id="pf-guide-back">← Запись</button>
      <h2 id="pf-guide-title" style="margin-top:20px">Как измерять ПСВ</h2>
      <p class="pf-sub">Памятка по домашней пикфлоуметрии</p>
      <details class="pf-box" open>
@@ -64,10 +64,11 @@
        <li>по проведению оценки функции внешнего дыхания на приёме врача.</li>
       </ul>
      </div>
-     <button type="button" id="pf-guide-done" class="pf-primary pf-wide">Вернуться к измерению</button>
+     <button type="button" id="pf-guide-done" class="pf-primary pf-wide">← Запись</button>
     </section>
 
 <section id="pf-entry-panel" hidden>
+     <button type="button" id="pf-entry-back">← Дневник</button>
      <h2 id="pf-entry-title">Новая запись</h2><div class="pf-chips" aria-label="Тип записи"><button type="button" data-mode="pef" aria-pressed="true">Измерение ПСВ</button><button type="button" data-mode="event" aria-pressed="false">Симптомы / ингалятор</button></div><p class="pf-sub" id="pf-entry-hint">Три попытки · сохраняется лучший результат</p>
      <form id="pf-form" novalidate>
       <div class="pf-grid"><label>Дата<input id="pf-date" type="date" min="1900-01-01"></label><label id="pf-slot-label">Измерение<select id="pf-slot"><option value="pm">Вечер</option><option value="am">Утро</option></select></label><label id="pf-event-time-label" hidden>Время события<input id="pf-event-time" type="time" value="12:00"></label></div>
@@ -141,7 +142,7 @@
  <p class="pf-sub">После установки проверьте, что дневник виден при запуске с иконки. При необходимости перенесите его резервной копией.</p>
  <button type="button" id="pf-update" class="pf-wide" hidden>Обновление готово — перезапустить</button>
  <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
- <p class="pf-sub">Версия 1.1.2 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
+ <p class="pf-sub">Версия 1.1.3 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
 </details>
 <div class="pf-box pf-reminders"><h3>Напоминания о ПСВ</h3>
  <p class="pf-sub">Выберите удобное время для текущего дневника. Оповещения будут приходить из календаря телефона после добавления событий.</p>
@@ -184,7 +185,7 @@
      <div class="pf-box"><h3 id="pf-control-heading">Вопросы</h3><p id="pf-control-instructions" class="pf-sub"></p><p id="pf-control-translation" class="pf-sub" hidden></p><details id="pf-control-eligibility" hidden><summary>Для кого предназначен TRACK</summary><p id="pf-control-eligibility-text" class="pf-sub"></p></details><div id="pf-control-points"></div><p id="pf-control-copyright" class="pf-sub"></p></div>
      <div class="pf-box" id="pf-control-reliever-wrap"><label>Препарат облегчения на дату заполнения<select id="pf-control-reliever"><option value="unknown">Не уточнён</option><option value="saba">КДБА, например сальбутамол</option><option value="ics_formoterol">ИГКС / формотерол, включая SMART</option><option value="ics_saba">ИГКС / КДБА</option><option value="other">Другой препарат — уточнить с врачом</option></select></label></div>
      <div class="pf-box" id="pf-control-result" aria-live="polite"></div>
-     <p id="pf-control-error" class="pf-error" role="alert"></p><button type="button" id="pf-control-save" class="pf-primary pf-wide">Сохранить результат в отчёт</button><button type="button" id="pf-control-back" class="pf-wide">Вернуться к отчёту</button>
+     <p id="pf-control-error" class="pf-error" role="alert"></p><button type="button" id="pf-control-save" class="pf-primary pf-wide">Сохранить результат в отчёт</button><button type="button" id="pf-control-back" class="pf-wide">← Отчёт для врача</button>
     </section>
     <p id="pf-status" class="pf-sub" role="status" aria-live="polite"></p>
     <section class="pf-box pf-author" aria-label="Автор-создатель приложения">
@@ -195,7 +196,7 @@
   </section>
    </main>
       <dialog id="pf-about" aria-labelledby="pf-about-title">
-    <button type="button" id="pf-about-close" autofocus>← Вернуться в дневник</button>
+    <button type="button" id="pf-about-close" autofocus>← Дневник</button>
     <h2 id="pf-about-title">О приложении</h2>
     <p>«Дышу» — дневник домашней пикфлоуметрии для взрослых и детей с бронхиальной астмой. Он помогает записывать измерения ПСВ, симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>
 
