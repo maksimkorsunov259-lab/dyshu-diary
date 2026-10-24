@@ -255,12 +255,12 @@ function calculatePredicted({age,height,sex}){
    svg.onclick=e=>{const rect=svg.getBoundingClientRect(),i=Math.max(0,Math.min(state.days-1,Math.round(((e.clientX-rect.left)*width/rect.width-left)/(width-left-right)*(state.days-1))));focusDate=dates[i];renderTimeline();draw();};
   }
  }
- function renderTabs(){const active=guideOpen?'guide':({entry:'graph',control:'report',patients:'settings'})[state.screen]||state.screen;root.querySelectorAll('.pf-tabs [data-screen]').forEach(button=>{const selected=button.dataset.screen===active;button.setAttribute('aria-pressed',String(selected));if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});}
+ function renderTabs(){const active=guideOpen?'guide':({entry:'graph',control:'report',patients:'settings',data:'settings'})[state.screen]||state.screen;root.querySelectorAll('.pf-tabs [data-screen]').forEach(button=>{const selected=button.dataset.screen===active;button.setAttribute('aria-pressed',String(selected));if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});}
  function show(screen){state.screen=screen;render();if(screen==='entry')loadEntry();if(screen==='settings')loadSettings();if(screen==='control')loadControl();persist();}
  function render(){
   if(guideOpen)closeGuide();
   el('profile').value=state.profile;
-  for(const screen of ['graph','entry','report','settings','control','patients'])el(screen+'-panel').hidden=state.screen!==screen;
+  for(const screen of ['graph','entry','report','settings','control','patients','data'])el(screen+'-panel').hidden=state.screen!==screen;
   renderTabs();
   root.querySelectorAll('[data-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.days===state.days)));
   el('period').textContent=`${shortDate(day(state.days-1))} — ${shortDate(ending)}`;
@@ -268,7 +268,7 @@ function calculatePredicted({age,height,sex}){
   el('personal').textContent=base(c)?`100% от ${basisLabel(c)}: ${base(c)} л/мин`:'Ориентир не задан';
  el('today-title').textContent=shortDate(today());
  el('range-end').value=ending;el('range-end-report').value=ending;
- renderPatientHeader();if(state.screen==='patients')renderPatients();
+ renderPatientHeader();if(state.screen==='patients')renderPatients();if(state.screen==='data')renderData();
   el('reference-summary').replaceChildren(text('p',`Лучший ПСВ в дневнике: ${observed()} л/мин`),text('p',predictedText(c.predicted),'pf-sub'),text('p',`Целевой ПСВ, одобренный врачом: ${c.target??'—'} л/мин`),text('p',`Зоны от ${basisLabel(c)} · с ${shortDate(c.from)}`,'pf-sub'));
   fillZones(el('zone-legend'),c);
   el('today').replaceChildren();
@@ -340,7 +340,7 @@ function calculatePredicted({age,height,sex}){
   guideOrigin=button;guidePosition={x:window.scrollX,y:window.scrollY};guideOpen=true;guideDismissed[state.profile]=true;el('guide-invitation').hidden=true;
   const days=config(state.screen==='entry'?(el('date').value||ending):ending).monitorDays;
   el('guide-duration').textContent=days?'Назначенная длительность наблюдения: '+days+' дн.':'Срок наблюдения уточните у врача.';
-  const destination=({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник'})[state.screen]||'Дневник';
+  const destination=({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник',data:'Данные и установка'})[state.screen]||'Дневник';
   el('guide-back').textContent='← '+destination;el('guide-done').textContent='← '+destination;
   el(state.screen+'-panel').hidden=true;el('guide-panel').hidden=false;renderTabs();renderPatientHeader();persist();window.scrollTo({top:0,behavior:'instant'});el('guide-back').focus({preventScroll:true});
  }
@@ -510,6 +510,7 @@ function calculatePredicted({age,height,sex}){
  root.querySelectorAll('[data-days]').forEach(b=>b.addEventListener('click',()=>{state.days=+b.dataset.days;render();persist();}));
  el('add').addEventListener('click',()=>{entryMode='pef';editingEventId=null;el('date').value=today();el('slot').value=new Date().getHours()<12?'am':'pm';show('entry');});
  function renderPatientHeader(){
+  el('profile').replaceChildren(...Object.entries(profiles).map(([id,p])=>new Option(p.label,id)));
   for(const option of el('profile').options){const p=profiles[option.value];option.textContent=p.label+(p.birth?' · '+shortDate(p.birth):'');}
   el('profile').value=state.profile;
   for(const id of ['profile','edit-profile','patients'])el(id).disabled=!storageReady;
@@ -532,7 +533,7 @@ function calculatePredicted({age,height,sex}){
   if(state.screen===screen){if(guideOpen)closeGuide();window.scrollTo({top:0,behavior:'instant'});return;}
   const origin=guideOpen?'guide':state.screen;
   if(!allowPatientNavigation())return;
-  if(screen==='patients'){patientReturn=origin;el('patients-back').textContent='← '+({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',control:'Опросник',guide:'Памятка'})[origin];}
+  if(screen==='patients'){patientReturn=origin;el('patients-back').textContent='← '+({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',control:'Опросник',guide:'Памятка',data:'Данные и установка'})[origin];}
   el('status').textContent='';show(screen);window.scrollTo({top:0,behavior:'instant'});if(screen==='patients')el('patients-title').focus({preventScroll:true});
  }
  function selectPatient(id){
@@ -692,7 +693,7 @@ function calculatePredicted({age,height,sex}){
  // Modal leaves the active screen and all draft fields untouched.
  const aboutDialog=el('about');
  const aboutAuthor=aboutDialog.querySelector('.pf-author');
- FamilyAbout.create({root,dialog:aboutDialog,returnLabel:()=> '← '+(guideOpen?'Памятка':({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник'})[state.screen]||'Дневник'),trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
+ FamilyAbout.create({root,dialog:aboutDialog,returnLabel:()=> '← '+(guideOpen?'Памятка':({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник',data:'Данные и установка'})[state.screen]||'Дневник'),trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая опросники ACT, c-ACT и TRACK, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
 
@@ -790,30 +791,57 @@ function calculatePredicted({age,height,sex}){
  for(const id of ['monitor-days','effective'])el(id).addEventListener('input',updateReminderPeriod);
 
  // Device-local persistence, versioned backups, date navigation and printing.
- let storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
+ let rawRecovery=null,storageReady=false,databaseReady=false,saveQueue=Promise.resolve(),pendingImport=null,unsaved=false,pendingWrites=0,failedWrite=false;
  const saveStatus=el('storage-status');
  // The updater waits for writes and never reloads after a failed save.
- window.DyshuUpdate={prepare:async()=>{await saveQueue;return storageReady&&!failedWrite&&pendingWrites===0&&!unsaved;}};
- function snapshot(){return structuredClone({format:'dyshu-diary',version:3,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
- function applySnapshot(s){reminders=s.reminders||defaultReminders();for(const key of ['adult','child']){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));}
+ window.DyshuUpdate={prepare:async()=>{await saveQueue;return storageReady&&!failedWrite&&pendingWrites===0&&!unsaved&&!patientDraftDirty&&!dataBusy;}};
+ function snapshot(){return structuredClone({format:'dyshu-diary',version:4,exportedAt:new Date().toISOString(),profiles,histories,records:state.records,events:eventsByProfile,assessments,guideDismissed,reminders});}
+ function applySnapshot(s){
+  for(const map of [profiles,histories,state.records,eventsByProfile,assessments,guideDismissed])Object.keys(map).forEach(k=>delete map[k]);
+  reminders=s.reminders||defaultReminders();
+  for(const key of Object.keys(s.profiles)){profiles[key]=s.profiles[key];histories[key]=s.histories[key];state.records[key]=s.records[key];eventsByProfile[key]=s.events[key];assessments[key]=s.assessments[key];guideDismissed[key]=s.guideDismissed?.[key]===true;}
+  if(!profiles[state.profile])state.profile=Object.keys(profiles)[0];assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));
+ }
+ let dataOrigin='settings',dataBusy=false;
+ function renderData(){FamilyData.refresh(Object.keys(profiles).length,profiles[state.profile].label);FamilyData.syncStorage?.();el('delete-patient').disabled=!storageReady||failedWrite;}
+ root.querySelectorAll('[data-open-data]').forEach(b=>b.addEventListener('click',()=>{
+  const origin=guideOpen?'guide':state.screen;
+  if(storageReady&&!allowPatientNavigation())return;
+  dataOrigin=origin;el('data-back').textContent='← '+({guide:'Памятка',settings:'Профиль',graph:'Дневник',report:'Отчёт для врача',patients:'Пациенты'})[origin];
+  show('data');window.scrollTo({top:0});
+ }));
+ el('data-back').addEventListener('click',()=>{if(dataOrigin==='guide')openGuide(el('data-back'));else show(dataOrigin);window.scrollTo({top:0});});
+ FamilyData.watchStorage('#pf-storage-status');
+ el('delete-patient').addEventListener('click',async()=>{
+  if(!storageReady||failedWrite||dataBusy)return;
+  const id=state.profile;
+  if(!confirm('Удалить дневник пациента «'+profiles[state.profile].label+'»? Сначала скачайте резервную копию. Другие пациенты сохранятся.'))return;
+  dataBusy=true;await saveQueue;if(failedWrite||state.profile!==id){dataBusy=false;return;}
+  const next=snapshot();
+  for(const key of ['profiles','histories','records','events','assessments','guideDismissed','reminders'])delete next[key][id];
+  if(!Object.keys(next.profiles).length){next.profiles.adult={label:'Новый пациент',birth:''};for(const key of ['histories','records','events','assessments'])next[key].adult=[];next.guideDismissed.adult=false;next.reminders.adult=defaultReminders().adult;}
+  try{await DiaryStore.write(next);applySnapshot(next);patientDraftDirty=false;show('data');el('data-message').textContent='Дневник пациента удалён.';}catch(e){el('data-message').textContent='Удаление не выполнено: '+e.message;}finally{dataBusy=false;}
+ });
+
  function persist(){
   if(!storageReady)return;
   const data=snapshot();pendingWrites++;unsaved=true;saveStatus.textContent='Сохраняем на устройстве…';saveStatus.dataset.error='false';
-  saveQueue=saveQueue.then(()=>DiaryStore.write(data)).then(()=>{failedWrite=false;saveStatus.textContent='';saveStatus.dataset.error='false';}).catch(e=>{failedWrite=true;saveStatus.dataset.error='true';saveStatus.textContent='Изменения НЕ сохранены. '+e.message+' Скачайте резервную копию из профиля, чтобы не потерять введённое.';}).finally(()=>{pendingWrites--;unsaved=failedWrite||pendingWrites>0;});
+  saveQueue=saveQueue.then(()=>DiaryStore.write(data)).then(()=>{failedWrite=false;saveStatus.textContent='';saveStatus.dataset.error='false';}).catch(e=>{failedWrite=true;saveStatus.dataset.error='true';saveStatus.textContent='Изменения НЕ сохранены. '+e.message+' Скачайте резервную копию в разделе «Данные и установка», чтобы не потерять введённое.';}).finally(()=>{pendingWrites--;unsaved=failedWrite||pendingWrites>0;});
   return saveQueue;
  }
  function validateSnapshot(s){
-  const fail=()=>{throw new Error('Файл не соответствует формату дневника (версии 1–3). Данные не изменены.');};
+  const fail=()=>{throw new Error('Файл не соответствует формату дневника (версии 1–4). Данные не изменены.');};
   const obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
   const str=(v,n)=>typeof v==='string'&&v.length<=n;
   const list=v=>Array.isArray(v)&&v.length<=100000;
   const date=d=>validDate(d);
-  if(!obj(s)||s.format!=='dyshu-diary'||![1,2,3].includes(s.version)||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
-  if(s.reminders!==undefined&&(!obj(s.reminders)||!['adult','child'].every(k=>validReminder(s.reminders[k]))))fail();
+  if(!obj(s)||s.format!=='dyshu-diary'||![1,2,3,4].includes(s.version)||!['profiles','histories','records','events','assessments'].every(k=>obj(s[k])))fail();
+  const patientKeys=Object.keys(s.profiles);if(!patientKeys.length||patientKeys.length>100||patientKeys.some(k=>!/^[-a-zA-Z0-9]{1,80}$/.test(k)||['__proto__','prototype','constructor'].includes(k)))fail();
+  if(s.reminders!==undefined&&(!obj(s.reminders)||!patientKeys.every(k=>validReminder(s.reminders[k]))))fail();
   if(s.version>=2&&s.reminders===undefined)fail();
   const meds=rows=>list(rows)&&rows.every(m=>obj(m)&&['salbutamol','berodual','smart'].includes(m.key)&&str(m.name,150)&&str(m.product||'',120)&&str(m.amount,80)&&str(m.time,5)&&(!m.time||/^([01]\d|2[0-3]):[0-5]\d$/.test(m.time))&&['rescue','maintenance'].includes(m.purpose));
   const common=r=>obj(r)&&date(r.date)&&Object.hasOwn(symptoms,r.symptom)&&validSymptoms(symptomValues(r))&&(s.version<3||Array.isArray(r.symptoms)&&r.symptom===primarySymptom(r.symptoms))&&[null,true,false].includes(r.night)&&Object.hasOwn(relievers,r.reliever)&&str(r.note,160)&&meds(r.meds||[]);
-  for(const key of ['adult','child']){
+  for(const key of patientKeys){
    const p=s.profiles[key];if(!obj(p)||!str(p.label,80)||!p.label.trim()||!str(p.birth,10)||p.birth&&(!date(p.birth)||ageAt(p.birth,today())>120))fail();
    if(!['histories','records','events','assessments'].every(k=>list(s[k][key])))fail();
    const dates=new Set();
@@ -823,7 +851,7 @@ function calculatePredicted({age,height,sex}){
    }
    s.histories[key].sort((a,b)=>a.from.localeCompare(b.from));
    const keys=new Set();for(const r of s.records[key]){if(!common(r)||!['am','pm'].includes(r.slot)||!Object.hasOwn(contexts,r.context)||!Array.isArray(r.attempts)||!validValues(r.attempts)||r.pef!==Math.max(...r.attempts)||keys.has(r.date+r.slot))fail();r.symptoms=symptomValues(r);r.symptom=primarySymptom(r.symptoms);r.attemptSpread=attemptSpread(r.attempts);keys.add(r.date+r.slot);}
-   const ids=new Set();for(const e of s.events[key]){if(!common(e)||!str(e.id,100)||!e.id||ids.has(e.id)||!['symptoms','infection','therapy','note'].includes(e.kind)||!validKinds(kindValues(e))||(s.version===3&&(!Array.isArray(e.kinds)||e.kind!==e.kinds[0]))||!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.time))fail();e.symptoms=symptomValues(e);e.symptom=primarySymptom(e.symptoms);e.kinds=kindValues(e);e.kind=e.kinds[0];ids.add(e.id);}
+   const ids=new Set();for(const e of s.events[key]){if(!common(e)||!str(e.id,100)||!e.id||ids.has(e.id)||!['symptoms','infection','therapy','note'].includes(e.kind)||!validKinds(kindValues(e))||(s.version>=3&&(!Array.isArray(e.kinds)||e.kind!==e.kinds[0]))||!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.time))fail();e.symptoms=symptomValues(e);e.symptom=primarySymptom(e.symptoms);e.kinds=kindValues(e);e.kind=e.kinds[0];ids.add(e.id);}
    const aids=new Set();for(const a of s.assessments[key]){
     if(!obj(a)||!str(a.id,100)||aids.has(a.id)||!date(a.date)||!controlScaleAllowed(a.instrument,a.age)||!Number.isInteger(a.sequence)||a.sequence<1||!['unknown','saba','ics_formoterol','ics_saba','other'].includes(a.reliever))fail();
     const score=calculateControlScore(a.instrument,a.answers);if(!score.ok)fail();a.score=score;
@@ -833,21 +861,32 @@ function calculatePredicted({age,height,sex}){
     aids.add(a.id);
    }
   }
-  s.reminders=s.reminders||defaultReminders();s.version=3;
+  s.reminders=s.reminders||defaultReminders();s.version=4;
   return s;
  }
  function downloadJSON(data,prefix){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=prefix+'-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
- el('backup').addEventListener('click',()=>{downloadJSON(snapshot(),'dyshu-backup');el('data-message').textContent='Копия подготовлена. Убедитесь, что файл сохранён в загрузках или выбранной папке.';});
+ el('backup').addEventListener('click',async()=>{await saveQueue;downloadJSON(rawRecovery||snapshot(),'dyshu-backup');el('data-message').textContent='Копия подготовлена. Проверьте файл в загрузках.';});
+ let importSequence=0;
+ function clearImport(){importSequence++;pendingImport=null;el('import-preview').hidden=true;el('import').value='';}
  el('import').addEventListener('change',async()=>{
-  pendingImport=null;el('import-preview').hidden=true;const file=el('import').files[0];if(!file)return;
-  try{if(file.size>30*1024*1024)throw new Error('Размер копии больше 30 МБ.');pendingImport=validateSnapshot(JSON.parse(await file.text()));const count=Object.values(pendingImport.records).reduce((n,r)=>n+r.length,0);el('import-description').textContent='В копии: '+count+' измерений. Профили: '+Object.values(pendingImport.profiles).map(p=>p.label).join(', ')+'. Все текущие данные будут заменены. Сначала сохраните их резервную копию.';el('import-preview').hidden=false;el('data-message').textContent='Копия проверена. Для замены подтвердите действие ниже.';}catch(e){el('data-message').textContent=e.message;}
+  const file=el('import').files[0];clearImport();if(!file)return;const sequence=importSequence;
+  try{if(file.size>30*1024*1024)throw new Error('Размер копии больше 30 МБ.');const incoming=validateSnapshot(JSON.parse(await file.text(),(k,v)=>{if(['__proto__','constructor','prototype'].includes(k))throw Error('Некорректный файл.');return v;}));if(sequence!==importSequence)return;pendingImport=incoming;const count=Object.values(incoming.records).reduce((n,r)=>n+r.length,0);el('import-description').textContent='Дышу. Пациентов: '+Object.keys(incoming.profiles).length+'. Измерений: '+count+'. Профили: '+Object.values(incoming.profiles).map(p=>p.label).join(', ')+'.';el('import-preview').hidden=false;el('data-message').textContent='Копия проверена. Выберите способ восстановления.';}catch(e){if(sequence===importSequence)el('data-message').textContent=e.message;}
  });
- el('import-cancel').addEventListener('click',()=>{pendingImport=null;el('import-preview').hidden=true;el('import').value='';el('data-message').textContent='Восстановление отменено.';});
- el('import-confirm').addEventListener('click',async()=>{
-  if(!pendingImport||!databaseReady)return;const incoming=pendingImport;pendingImport=null;el('import-confirm').disabled=true;
+ el('import-cancel').addEventListener('click',()=>{clearImport();el('data-message').textContent='Восстановление отменено.';});
+ async function importBackup(add){
+  if(!pendingImport||!databaseReady||dataBusy)return;
+  if(add&&(!storageReady||failedWrite)){el('data-message').textContent='Добавление недоступно при ошибке чтения или сохранения. Сначала скачайте текущую копию.';return;}
+  if(!confirm(add?'Добавить пациентов из копии отдельными дневниками?':'Заменить ВСЕ данные выбранной копией? Сначала скачайте текущую резервную копию.'))return;
+  dataBusy=true;const incoming=structuredClone(pendingImport),sequence=importSequence;el('import-confirm').disabled=true;el('import-add').disabled=true;
   await saveQueue;
-  try{await DiaryStore.write(incoming);applySnapshot(incoming);unsaved=false;failedWrite=false;storageReady=true;root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=false);saveStatus.textContent='Дневник восстановлен на устройстве';saveStatus.dataset.error='false';el('import-preview').hidden=true;el('import').value='';render();loadSettings();el('data-message').textContent='Восстановлено. Новые записи сохраняются в этом дневнике.';}catch(e){el('data-message').textContent='Восстановление не выполнено: '+e.message;}finally{el('import-confirm').disabled=false;}
- });
+  try{
+   if(sequence!==importSequence)return;
+   let result=incoming;
+   if(add){if(failedWrite)throw Error('Не удалось сохранить текущий дневник.');result=snapshot();if(Object.keys(result.profiles).length+Object.keys(incoming.profiles).length>100)throw Error('Можно хранить до 100 пациентов.');for(const old of Object.keys(incoming.profiles)){const id=crypto.randomUUID();for(const key of ['profiles','histories','records','events','assessments','guideDismissed','reminders'])result[key][id]=incoming[key]?.[old]??false;result.reminders[id].id=crypto.randomUUID();}}
+   validateSnapshot(result);await DiaryStore.write(result);applySnapshot(result);rawRecovery=null;unsaved=false;failedWrite=false;storageReady=true;patientDraftDirty=false;root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=false);saveStatus.textContent='Записи сохранены на этом устройстве.';saveStatus.dataset.error='false';clearImport();render();el('data-message').textContent=add?'Пациенты добавлены из копии.':'Дневники восстановлены из копии.';
+  }catch(e){el('data-message').textContent='Восстановление не выполнено: '+e.message;}finally{dataBusy=false;el('import-confirm').disabled=false;el('import-add').disabled=false;}
+ }
+ el('import-confirm').addEventListener('click',()=>importBackup(false));el('import-add').addEventListener('click',()=>importBackup(true));
  function updateAge(){const birth=el('birth').value;el('age').readOnly=!!birth;if(birth)el('age').value=ageAt(birth,el('effective').value)??'';}
  el('birth').addEventListener('input',()=>{updateAge();previewSettings();});el('effective').addEventListener('change',()=>{updateAge();previewSettings();});
  for(const id of ['range-end','range-end-report'])el(id).addEventListener('change',()=>{const date=el(id).value;if(!validDate(date)){el(id).value=ending;return;}ending=date;focusDate=date;render();});
@@ -857,7 +896,7 @@ function calculatePredicted({age,height,sex}){
  window.addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
  const refreshDates=()=>{root.querySelectorAll('input[type=date]').forEach(input=>{input.min='1900-01-01';input.max=today();});};refreshDates();el('date').value=today();el('control-date').value=today();el('effective').value=today();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDates();});
- try{const saved=await DiaryStore.read();databaseReady=true;if(saved)applySnapshot(validateSnapshot(saved));storageReady=true;saveStatus.textContent=saved?'':'Пустой дневник. Начните с профиля или первого измерения.';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
+ try{const saved=await DiaryStore.read();databaseReady=true;rawRecovery=saved;if(saved)applySnapshot(validateSnapshot(saved));rawRecovery=null;storageReady=true;saveStatus.textContent=saved?'':'Пустой дневник. Начните с профиля или первого измерения.';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
  root.querySelector('.pf-content').inert=false;el('profile').disabled=false;root.querySelector('.pf-tabs').inert=false;
  el('loading').hidden=true;
 

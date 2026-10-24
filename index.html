@@ -11,6 +11,13 @@
      <div id="pf-patient-list" class="pf-patient-list"></div>
      <button type="button" id="pf-patient-edit" class="pf-wide">Изменить выбранный профиль</button><button type="button" id="pf-patients-back" class="pf-profile-link">← Дневник</button>
     </section>
+    <section id="pf-data-panel" hidden><button type="button" id="pf-data-back">← Профиль</button><h2>Данные и установка</h2><div class="family-data" data-app-name="Дышу">
+<section class="family-data-card" data-family-section="device"><h3>Ваш дневник на этом устройстве</h3><p>Без регистрации и облачной синхронизации. Записи не передаются автору приложения. Дневники на разных устройствах не синхронизируются.</p><p data-family-count></p><p data-family-save role="status">Проверяем сохранение…</p></section>
+<section class="family-data-card" data-family-section="install"><h3>Установка приложения</h3><p data-family-install-help></p><button type="button" id="pf-install" class="family-data-button family-data-primary" hidden>Установить приложение</button><p id="pf-install-status" class="family-data-note" role="status"></p></section>
+<section class="family-data-card" data-family-section="update"><h3>Обновление и работа без интернета</h3><p>Дышу · версия <span id="pf-version">1.1.6</span></p><p id="pf-offline-status" role="status">Подготовка работы без интернета…</p><p class="family-data-note">Для первого открытия нужен интернет. После подготовки дневник доступен без сети; внешние ссылки требуют подключения.</p><button type="button" id="pf-check-update" class="family-data-button">Проверить обновления</button><button type="button" id="pf-update" class="family-data-button family-data-primary" hidden>Обновить приложение</button><p id="pf-update-check-status" role="status"></p></section>
+<section class="family-data-card" data-family-section="backup"><h3>Резервная копия и перенос данных</h3><p>Копия содержит дневники всех пациентов. Сохраните её перед сменой устройства, переустановкой приложения или очисткой данных браузера.</p><button type="button" id="pf-backup" class="family-data-button family-data-primary">Скачать резервную копию</button><label class="family-data-file">Восстановить из файла<input type="file" id="pf-import" accept=".json,application/json"></label><div id="pf-import-preview" class="family-data-preview" hidden><p id="pf-import-description"></p><button type="button" id="pf-import-add" class="family-data-button family-data-primary">Добавить пациентов из копии</button><button type="button" id="pf-import-confirm" class="family-data-button">Заменить все данные</button><button type="button" id="pf-import-cancel" class="family-data-button">Отмена</button></div><p id="pf-data-message" role="status"></p><p class="family-data-note">Файл содержит медицинские сведения без шифрования. Храните его в доступном только вам месте. Подходит только копия приложения «Дышу».</p></section>
+<details class="family-data-card" data-family-section="delete"><summary>Удаление данных</summary><p>Выбран пациент: <strong data-family-delete-name></strong>.</p><p>Будут удалены его профиль, назначения и записи. Дневники других пациентов сохранятся. Сначала скачайте резервную копию.</p><button type="button" id="pf-delete-patient" class="family-data-button">Удалить дневник пациента</button></details>
+</div></section>
     <section id="pf-graph-panel">
      <h2>Дневник</h2><p class="pf-sub" id="pf-period"></p>
      <label class="pf-range-date">Период заканчивается<input type="date" id="pf-range-end"></label><div class="pf-range" aria-label="Период графика"><button type="button" data-days="7" aria-pressed="true">7 дней</button><button type="button" data-days="14" aria-pressed="false">14 дней</button><button type="button" data-days="30" aria-pressed="false">30 дней</button><button type="button" data-days="90" aria-pressed="false">90 дней</button></div>
@@ -53,7 +60,7 @@
       <p>Всего — до пяти попыток. Если разброс сохраняется, сохраните результаты с отметкой о расхождении и обсудите технику с врачом. Не продолжайте бесконечно добиваться одинаковых цифр.</p>
       <p class="pf-sub">Близкие результаты сами по себе не гарантируют правильную технику. При головокружении или ухудшении самочувствия прекратите манёвры.</p>
      </details>
-     <button type="button" id="pf-guide-videos" class="pf-wide" aria-expanded="false" aria-controls="pf-guide-videos-content">Полезные видеоинструкции от автора</button>
+     <button type="button" class="pf-wide" data-open-data>Данные и установка</button><button type="button" id="pf-guide-videos" class="pf-wide" aria-expanded="false" aria-controls="pf-guide-videos-content">Полезные видеоинструкции от автора</button>
      <div id="pf-guide-videos-content" class="pf-box" hidden>
       <p>Раздел дополнится видеоинструкциями от автора:</p>
       <ul>
@@ -126,23 +133,7 @@
       <div id="pf-smart-config"><label>Комбинация ИГКС/формотерол<select id="pf-smart-name"><option value="budesonide">Будесонид / формотерол · Симбикорт</option><option value="beclometasone">Беклометазон / формотерол · Фостер</option></select></label><label>Препарат и дозировка из назначения<select id="pf-smart-picker"></select></label><label id="pf-smart-custom" hidden>Другой назначенный ингалятор и дозировка<input id="pf-smart-product" type="text" maxlength="100" placeholder="Перенести из назначения врача"></label></div>
       <p class="pf-sub">Комбинацию, устройство, дозировку и допустимость по возрасту определяет врач. Приложение не рассчитывает дозы. Выбор препарата не является назначением схемы SMART. Фостер 200/6 и Симбикорт 320/9 не предлагаются для облегчения симптомов в режиме SMART.</p>
      </div>
-     <details class="pf-box pf-device"><summary><strong>Данные, резервная копия и установка</strong></summary>
- <p>Записи хранятся только в этом браузере на этом устройстве. Без аккаунта и отправки врачу. На другом телефоне дневник будет пустым, пока вы не восстановите копию.</p>
- <p>Очистка данных браузера или потеря телефона может удалить дневник. Сохраняйте копию регулярно и перед переносом на другой телефон. В приватном режиме записи могут исчезнуть при закрытии браузера.</p>
- <button type="button" id="pf-backup" class="pf-wide">Скачать резервную копию</button>
- <p class="pf-sub">Файл содержит дневник и назначения всех профилей. Храните его в защищённом месте. Копия не зашифрована.</p>
- <label>Восстановить из файла<input type="file" id="pf-import" accept="application/json,.json"></label>
- <div id="pf-import-preview" hidden><p id="pf-import-description"></p><button type="button" id="pf-import-confirm">Заменить данные этой копией</button><button type="button" id="pf-import-cancel">Отмена</button></div>
- <p id="pf-data-message" role="status"></p>
- <button type="button" id="pf-install" class="pf-wide" hidden>Установить на главный экран</button>
- <p><strong>iPhone:</strong> откройте ссылку в Safari → «Поделиться» → «На экран “Домой”».</p>
- <p><strong>Android:</strong> меню Chrome → «Добавить на главный экран» или «Установить приложение».</p>
- <p id="pf-offline-status" class="pf-sub">Подготовка работы без интернета…</p>
- <p class="pf-sub">После установки проверьте, что дневник виден при запуске с иконки. При необходимости перенесите его резервной копией.</p>
- <button type="button" id="pf-update" class="pf-wide" hidden>Обновление готово — перезапустить</button>
- <a href="./qr.html" target="_blank" rel="noopener">QR-код для открытия дневника</a>
- <p class="pf-sub">Версия 1.1.5 · Данные сохраняются при обновлении приложения. Резервная копия нужна независимо от обновлений.</p>
-</details>
+     <button type="button" class="pf-wide" data-open-data>Данные и установка</button>
 <div class="pf-box pf-reminders"><h3>Напоминания о ПСВ</h3>
  <p class="pf-sub">Выберите удобное время для текущего дневника. Оповещения будут приходить из календаря телефона после добавления событий.</p>
  <p id="pf-reminder-period" class="pf-sub" role="status"></p>
@@ -216,4 +207,4 @@
   </section>
  </div>
 </div>
-<noscript>Для дневника включите JavaScript в браузере.</noscript><script src="./storage.js"></script><script src="./entry-options.js"></script><script src="./family-about.js"></script><script src="./app.js"></script><script src="./install.js"></script></body></html>
+<noscript>Для дневника включите JavaScript в браузере.</noscript><script src="./storage.js"></script><script src="./entry-options.js"></script><script src="./family-data.js"></script><script src="./update-check.js"></script><script src="./family-about.js"></script><script src="./app.js"></script><script src="./install.js"></script></body></html>
