@@ -803,7 +803,7 @@ function calculatePredicted({age,height,sex}){
   if(!profiles[state.profile])state.profile=Object.keys(profiles)[0];assessmentSerial=Math.max(0,...Object.values(assessments).flat().map(a=>a.sequence));
  }
  let dataOrigin='settings',dataBusy=false;
- function renderData(){FamilyData.refresh(Object.keys(profiles).length,profiles[state.profile].label);FamilyData.syncStorage?.();el('delete-patient').disabled=!storageReady||failedWrite;}
+ function renderData(){FamilyData.refresh(Object.keys(profiles).length,profiles[state.profile].label,Object.entries(profiles).map(([id,p])=>({id,label:p.label+(p.birth?' · '+shortDate(p.birth):'')})),state.profile);FamilyData.syncStorage?.();el('delete-patient').disabled=!storageReady||failedWrite;}
  root.querySelectorAll('[data-open-data]').forEach(b=>b.addEventListener('click',()=>{
   const origin=guideOpen?'guide':state.screen;
   if(storageReady&&!allowPatientNavigation())return;
@@ -814,9 +814,9 @@ function calculatePredicted({age,height,sex}){
  FamilyData.watchStorage('#pf-storage-status');
  el('delete-patient').addEventListener('click',async()=>{
   if(!storageReady||failedWrite||dataBusy)return;
-  const id=state.profile;
-  if(!confirm('Удалить дневник пациента «'+profiles[state.profile].label+'»? Сначала скачайте резервную копию. Другие пациенты сохранятся.'))return;
-  dataBusy=true;await saveQueue;if(failedWrite||state.profile!==id){dataBusy=false;return;}
+  const id=FamilyData.selectedPatient();if(!profiles[id])return;
+  if(!confirm('Удалить дневник пациента «'+profiles[id].label+'»? Сначала скачайте резервную копию. Другие пациенты сохранятся.'))return;
+  dataBusy=true;await saveQueue;if(failedWrite||!profiles[id]){dataBusy=false;return;}
   const next=snapshot();
   for(const key of ['profiles','histories','records','events','assessments','guideDismissed','reminders'])delete next[key][id];
   if(!Object.keys(next.profiles).length){next.profiles.adult={label:'Новый пациент',birth:''};for(const key of ['histories','records','events','assessments'])next[key].adult=[];next.guideDismissed.adult=false;next.reminders.adult=defaultReminders().adult;}
