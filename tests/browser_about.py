@@ -34,12 +34,11 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory() as tmp:
   trigger.click();expect(dialog).to_be_visible();assert dialog.evaluate('(d)=>d.scrollTop')==0
   dialog.locator('[data-family-about-close]').click();expect(dialog).not_to_be_visible();expect(trigger).to_be_focused();assert field.input_value()==before
  # Navigating from the overlay retains the existing unsaved-change confirmation.
- if APP!='dyshu-diary':
-  trigger.click();destination=dialog.locator('[data-go=settings],[data-view=settings]');destination.click();expect(dialog).to_be_visible();assert prompts==['confirm'];assert field.input_value()==before
-  accept[0]=True;destination.click();expect(dialog).not_to_be_visible();assert prompts==['confirm','confirm']
-  if APP in ['em-prikorm','em-yaytso']:assert p.evaluate('view')=='settings'
-  else:assert p.locator('[data-panel=settings]').is_visible()
-  accept[0]=False
+ p.evaluate('DyshuUpdate.prepare()')
+ trigger.click();destination=dialog.locator('[data-view=data]');destination.click();expect(dialog).to_be_visible();assert prompts==['confirm'];assert field.input_value()==before
+ accept[0]=True;destination.click();expect(dialog).not_to_be_visible();assert prompts==['confirm','confirm'];expect(p.locator('#pf-data-panel')).to_be_visible()
+ expect(p.locator('#pf-data-back')).to_have_text('← Профиль');p.locator('#pf-data-back').click();expect(p.locator('#pf-settings-panel')).to_be_visible()
+ accept[0]=False
  # Reload the cached application offline and use About again.
  accept[0]=True;p.reload();p.wait_for_selector('.family-about',state='attached');p.evaluate('navigator.serviceWorker.ready');c.set_offline(True);p.reload();p.wait_for_selector('.family-about',state='attached')
  trigger=p.locator('[data-open-about],[data-view=about],[data-go=about]').first;trigger.click();expect(dialog).to_be_visible();assert dialog.locator('[data-family-about-close]').is_visible();assert p.evaluate("document.documentElement.style.overflow")=='hidden';dialog.locator('[data-family-about-close]').click();expect(dialog).not_to_be_visible();expect(trigger).to_be_focused();assert p.evaluate("document.documentElement.style.overflow")!='hidden'

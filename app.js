@@ -693,7 +693,7 @@ function calculatePredicted({age,height,sex}){
  // Modal leaves the active screen and all draft fields untouched.
  const aboutDialog=el('about');
  const aboutAuthor=aboutDialog.querySelector('.pf-author');
- FamilyAbout.create({root,dialog:aboutDialog,returnLabel:()=> '← '+(guideOpen?'Памятка':({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник',data:'Данные и установка'})[state.screen]||'Дневник'),trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Профиль», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая клинические рекомендации, публикации, опросники ACT, c-ACT и TRACK и таблицы, принадлежат соответствующим правообладателям.",author:aboutAuthor});}});
+ const aboutOverlay=FamilyAbout.create({root,dialog:aboutDialog,returnLabel:()=> '← '+(guideOpen?'Памятка':({graph:'Дневник',entry:'Запись',settings:'Профиль',report:'Отчёт для врача',patients:'Пациенты',control:'Опросник',data:'Данные и установка'})[state.screen]||'Дневник'),trigger:'[data-open-about]',build(){return FamilyAbout.layout({"name":"Дышу","tagline":"Дневник домашней пикфлоуметрии для взрослых и детей","icon":"./icon-blue-192.png","description":"<p>Помогает взрослым и детям с бронхиальной астмой записывать пиковую скорость выдоха (ПСВ), симптомы и применение ингаляторов, следить за динамикой на графиках и готовить отчёт к приёму врача.</p>","details":"<p class=\"family-about-note\">Ориентиры ПСВ и лечение определяет врач. Дневник помогает наблюдать за состоянием и не заменяет индивидуальный план лечения.</p>","dataDetails":"<p class=\"family-about-note\">Записи сохраняются в этом браузере и не отправляются врачу автоматически. Резервную копию можно сохранить в разделе «Данные и установка», а отчёт — показать на приёме.</p>","rightsExtra":"Права на сторонние материалы, включая клинические рекомендации, публикации, опросники ACT, c-ACT и TRACK и таблицы, принадлежат соответствующим правообладателям.",actions:'<button type="button" data-view="data">Данные и установка</button>',author:aboutAuthor});},navigate(next){if(next==='data')openData(()=>aboutOverlay.close(false));}});
  root.querySelectorAll('[data-open-about]').forEach(button=>button.addEventListener('click',()=>aboutDialog.showModal()));
  el('about-close').addEventListener('click',()=>aboutDialog.close());
 
@@ -804,12 +804,14 @@ function calculatePredicted({age,height,sex}){
  }
  let dataOrigin='settings',dataBusy=false;
  function renderData(){FamilyData.refresh(Object.keys(profiles).length,profiles[state.profile].label,Object.entries(profiles).map(([id,p])=>({id,label:p.label+(p.birth?' · '+shortDate(p.birth):'')})),state.profile);FamilyData.syncStorage?.();el('delete-patient').disabled=!storageReady||failedWrite;}
- root.querySelectorAll('[data-open-data]').forEach(b=>b.addEventListener('click',()=>{
+ function openData(beforeOpen=()=>{}){
   const origin=guideOpen?'guide':state.screen;
   if(storageReady&&!allowPatientNavigation())return;
-  dataOrigin=origin;el('data-back').textContent='← '+({guide:'Памятка',settings:'Профиль',graph:'Дневник',report:'Отчёт для врача',patients:'Пациенты'})[origin];
+  beforeOpen();
+  if(origin!=='data'){dataOrigin=origin;el('data-back').textContent='← '+({guide:'Памятка',settings:'Профиль',graph:'Дневник',report:'Отчёт для врача',patients:'Пациенты',entry:'Запись',control:'Опросник'})[origin];}
   show('data');window.scrollTo({top:0});
- }));
+ }
+ root.querySelectorAll('[data-open-data]').forEach(b=>b.addEventListener('click',()=>openData()));
  el('data-back').addEventListener('click',()=>{if(dataOrigin==='guide')openGuide(el('data-back'));else show(dataOrigin);window.scrollTo({top:0});});
  FamilyData.watchStorage('#pf-storage-status');
  el('delete-patient').addEventListener('click',async()=>{
