@@ -156,3 +156,6 @@ html{background:#f2f8fd}
 #pf-demo .pf-brand-copy strong{display:block}
 #pf-demo .pf-tag{margin-top:3px;font-size:11px;line-height:1.5;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--pf-muted)}
 @media(max-width:380px){#pf-demo .pf-tag{font-size:10px;letter-spacing:.8px}}
+
+/* Keep the app column visible below the sticky header on the outer blue canvas. */
+@media screen{html{background:#e7f0f8}#pf-demo .pf-phone{background:#f7fbfe}}
