@@ -299,8 +299,32 @@ function calculatePredicted({age,height,sex}){
   for(const t of items){const row=text('div','','pf-logitem');row.dataset.itemType=t.type;
    row.append(text('span',t.time||'Время не указано','pf-sub'),text('p',t.label));if(t.detail)row.append(text('p',t.detail,'pf-sub'));
    const edit=text('button','Изменить запись');edit.type='button';edit.dataset.editSource=t.sourceId;
-   edit.addEventListener('click',()=>{el('date').value=t.date;if(t.source==='pef'){entryMode='pef';el('slot').value=t.slot;editingEventId=null;}else{entryMode='event';editingEventId=t.sourceId;}show('entry');});row.append(edit);el('timeline').append(row);
+   edit.addEventListener('click',()=>{el('date').value=t.date;if(t.source==='pef'){entryMode='pef';el('slot').value=t.slot;editingEventId=null;}else{entryMode='event';editingEventId=t.sourceId;}show('entry');});
+   const remove=text('button','Удалить запись','pf-delete-record');remove.type='button';remove.dataset.deleteSource=t.sourceId;
+   remove.addEventListener('click',()=>deleteDiaryRecord(t));
+   const actions=text('div','','pf-record-actions');actions.append(edit,remove);row.append(actions);el('timeline').append(row);
   }
+ }
+ async function deleteDiaryRecord(item){
+  if(!storageReady||dataBusy)return;
+  if(failedWrite){el('status').textContent='Удаление недоступно: сначала устраните ошибку сохранения дневника.';return;}
+  const patient=state.profile,key=item.source==='pef'?'records':'events';
+  const matches=r=>item.source==='pef'?r.date===item.date&&r.slot===item.slot:r.id===item.sourceId;
+  const record=(item.source==='pef'?records():events()).find(matches);if(!record)return;
+  const description=item.source==='pef'?`${record.slot==='am'?'утро':'вечер'}, ПСВ ${record.pef} л/мин`:`событие в ${record.time}`;
+  if(!confirm(`Удалить запись пациента «${profiles[patient].label}» за ${shortDate(record.date)}: ${description}?
+
+Будет удалена вся эта запись, включая внесённые вместе с ней симптомы, препараты и заметку. Остальные записи сохранятся.`))return;
+  dataBusy=true;root.inert=true;el('status').textContent='Удаляем запись…';
+  // Serialize deletion with pending saves; only change the displayed diary after a successful atomic write.
+  saveQueue=saveQueue.then(async()=>{
+   if(failedWrite)throw new Error('Не удалось сохранить предыдущие изменения.');
+   const next=snapshot();next[key][patient]=next[key][patient].filter(r=>!matches(r));
+   await DiaryStore.write(next);applySnapshot(next);render();
+   el('status').textContent='Запись удалена. Дневник, график и отчёт обновлены.';
+  }).catch(error=>{el('status').textContent='Запись не удалена. '+error.message;})
+   .finally(()=>{dataBusy=false;root.inert=false;el('timeline-date').focus({preventScroll:true});});
+  await saveQueue;
  }
  function renderReport(data,complete){
   renderControlReport();

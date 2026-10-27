@@ -159,3 +159,7 @@ html{background:#f2f8fd}
 
 /* Keep the app column visible below the sticky header on the outer blue canvas. */
 @media screen{html{background:#e7f0f8}#pf-demo .pf-phone{background:#f7fbfe}}
+
+#pf-demo .pf-record-actions{display:flex;flex-wrap:wrap;gap:8px}
+#pf-demo .pf-record-actions button{flex:1;min-width:0}
+#pf-demo .pf-delete-record{color:#9b2c2c;border-color:#d5aaaa}
