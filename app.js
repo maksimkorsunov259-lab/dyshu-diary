@@ -258,6 +258,7 @@ function calculatePredicted({age,height,sex}){
  function renderTabs(){const active=guideOpen?'guide':({entry:'graph',control:'report',patients:'settings',data:'settings'})[state.screen]||state.screen;root.querySelectorAll('.pf-tabs [data-screen]').forEach(button=>{const selected=button.dataset.screen===active;button.setAttribute('aria-pressed',String(selected));if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});}
  function show(screen){state.screen=screen;render();if(screen==='entry')loadEntry();if(screen==='settings')loadSettings();if(screen==='control')loadControl();persist();}
  function render(){
+  root.querySelector("[data-family-empty]").hidden=!storageReady||!!((state.records[state.profile]||[]).length+(eventsByProfile[state.profile]||[]).length+(assessments[state.profile]||[]).length);
   if(guideOpen)closeGuide();
   el('profile').value=state.profile;
   for(const screen of ['graph','entry','report','settings','control','patients','data'])el(screen+'-panel').hidden=state.screen!==screen;
@@ -922,7 +923,7 @@ function calculatePredicted({age,height,sex}){
  window.addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
  const refreshDates=()=>{root.querySelectorAll('input[type=date]').forEach(input=>{input.min='1900-01-01';input.max=today();});};refreshDates();el('date').value=today();el('control-date').value=today();el('effective').value=today();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDates();});
- try{const saved=await DiaryStore.read();databaseReady=true;rawRecovery=saved;if(saved)applySnapshot(validateSnapshot(saved));rawRecovery=null;storageReady=true;saveStatus.textContent=saved?'':'Пустой дневник. Начните с профиля или первого измерения.';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
+ try{const saved=await DiaryStore.read();databaseReady=true;rawRecovery=saved;if(saved)applySnapshot(validateSnapshot(saved));rawRecovery=null;storageReady=true;saveStatus.textContent='';}catch(e){saveStatus.dataset.error='true';saveStatus.textContent='Хранилище недоступно или данные не удалось прочитать. '+e.message+' Не очищайте данные браузера. Попробуйте другой браузер или восстановите резервную копию.';root.querySelectorAll('#pf-save,#pf-settings-save,#pf-control-save').forEach(b=>b.disabled=true);el('import-confirm').disabled=!databaseReady;}
  root.querySelector('.pf-content').inert=false;el('profile').disabled=false;root.querySelector('.pf-tabs').inert=false;
  el('loading').hidden=true;
 
